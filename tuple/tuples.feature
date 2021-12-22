@@ -54,3 +54,60 @@ Scenario: Subtracting a vector from the zero vector
 Scenario: Negating a tuple
   Given a ← tuple(1.0, -2.0, 3.0, -4.0)
   Then -a = tuple(-1.0, 2.0, -3.0, 4.0)
+
+Scenario: Multiplying a tuple by a scalar
+  Given a ← tuple(1.0, -2.0, 3.0, -4.0)
+  Then a * 3.5 = tuple(3.5, -7.0, 10.5, -14.0)
+
+Scenario: Multiplying a tuple by a fraction
+  Given a ← tuple(1.0, -2.0, 3.0, -4.0)
+  Then a * 0.5 = tuple(0.5, -1.0, 1.5, -2.0)
+
+Scenario: Dividing a tuple by a scalar
+  Given a ← tuple(1.0, -2.0, 3.0, -4.0)
+  Then a / 2.0 = tuple(0.5, -1.0, 1.5, -2.0)
+
+Scenario: Computing the magnitude of vector(1, 0, 0)
+  Given v ← vector(1.0, 0.0, 0.0)
+  Then magnitude(v) = 1.0
+
+Scenario: Computing the magnitude of vector(0, 1, 0)
+  Given v ← vector(0.0, 1.0, 0.0)
+  Then magnitude(v) = 1.0
+
+Scenario: Computing the magnitude of vector(0, 0, 1)
+  Given v ← vector(0.0, 0.0, 1.0)
+  Then magnitude(v) = 1.0
+
+Scenario: Computing the magnitude of vector(1, 2, 3)
+  Given v ← vector(1.0, 2.0, 3.0)
+  Then magnitude(v) = 3.74165738677
+
+Scenario: Computing the magnitude of vector(-1, -2, -3)
+  Given v ← vector(-1.0, -2.0, -3.0)
+  Then magnitude(v) = 3.74165738677
+
+Scenario: Normalizing vector(4, 0, 0) gives (1, 0, 0)
+  Given v ← vector(4.0, 0.0, 0.0)
+  Then normalize(v) = vector(1.0, 0.0, 0.0)
+
+Scenario: Normalizing vector(1, 2, 3)
+  Given v ← vector(1.0, 2.0, 3.0)
+                                  # vector(1/√14,   2/√14,   3/√14)
+  Then normalize(v) = vector(0.26726, 0.53452, 0.80178)
+
+Scenario: The magnitude of a normalized vector
+  Given v ← vector(1.0, 2.0, 3.0)
+  When norm ← normalize(v)
+  Then magnitude(norm) = 1.0
+
+Scenario: The dot product of two tuples
+  Given a ← vector(1.0, 2.0, 3.0)
+    And b ← vector(2.0, 3.0, 4.0)
+  Then dot(a, b) = 20.0
+
+Scenario: The cross product of two vectors
+  Given a ← vector(1.0, 2.0, 3.0)
+    And b ← vector(2.0, 3.0, 4.0)
+  Then cross(a, b) = vector(-1.0, 2.0, -1.0)
+    And cross(b, a) = vector(1.0, -2.0, 1.0)

@@ -86,6 +86,20 @@ func isEqualAddTwoTuples(tupleA, tupleB string, x, y, z, w float64) error {
 	return isEqualTuple(newTuple, x, y, z, w)
 }
 
+func isEqualMulTwoTuples(tupleA string, mulAmount, x, y, z, w float64) error {
+	newTuple := fmt.Sprintf("%s * %f", tupleA, mulAmount)
+	tuples[newTuple] = tuples[tupleA].Mul(mulAmount)
+
+	return isEqualTuple(newTuple, x, y, z, w)
+}
+
+func isEqualDivTwoTuples(tupleA string, divAmount, x, y, z, w float64) error {
+	newTuple := fmt.Sprintf("%s / %f", tupleA, divAmount)
+	tuples[newTuple] = tuples[tupleA].Div(divAmount)
+
+	return isEqualTuple(newTuple, x, y, z, w)
+}
+
 func isEqualSubVecRes(tupleA, tupleB string, x, y, z float64) error {
 	newTuple := fmt.Sprintf("%s - %s", tupleA, tupleB)
 	tuples[newTuple] = tuples[tupleA].Sub(tuples[tupleB])
@@ -98,6 +112,35 @@ func isEqualSubPointRes(tupleA, tupleB string, x, y, z float64) error {
 	tuples[newTuple] = tuples[tupleA].Sub(tuples[tupleB])
 
 	return isEqualTuple(newTuple, x, y, z, 1.0)
+}
+
+func isEqualDot(tupleA, tupleB string, dot float64) error {
+	if gotten := tuples[tupleA].Dot(tuples[tupleB]); !compareFloat(gotten, dot) {
+		return fmt.Errorf("expected %s.Dot(%s) magnitude to be %f got %f",
+			tupleA, tupleB, dot, gotten)
+	}
+	return nil
+}
+
+func isEqualCross(tupleA, tupleB string, x, y, z float64) error {
+	newTuple := fmt.Sprintf("cross(%s, %s)", tupleA, tupleB)
+	tuples[newTuple] = tuples[tupleA].Cross(tuples[tupleB])
+
+	return isEqualTuple(newTuple, x, y, z, 0.0)
+}
+
+func isEqualMag(tuple string, mag float64) error {
+	if gotten := tuples[tuple].Magnitude(); !compareFloat(gotten, mag) {
+		return fmt.Errorf("expected %s magnitude to be %f got %f", tuple, mag, gotten)
+	}
+	return nil
+}
+
+func isEqualNorm(tuple string, x, y, z float64) error {
+	newTuple := fmt.Sprintf("normalize(%s)", tuple)
+	tuples[newTuple] = tuples[tuple].Normalize()
+
+	return isEqualTuple(newTuple, x, y, z, 0.0)
 }
 
 func tupleIsA(tuple string, isOrNotIs string, expected string) error {
@@ -122,6 +165,10 @@ func createVector(tuple string, x, y, z float64) {
 	tuples[tuple] = Vector(x, y, z)
 }
 
+func createVectorNormalize(newTuple string, tuple string) {
+	tuples[newTuple] = tuples[tuple].Normalize()
+}
+
 func createPoint(tuple string, x, y, z float64) {
 	tuples[tuple] = Point(x, y, z)
 }
@@ -140,6 +187,7 @@ func initializeScenario(ctx *godog.ScenarioContext) {
 		wordRegex, floatRegex, floatRegex, floatRegex), createPoint)
 	ctx.Step(fmt.Sprintf(`^%s ← vector\(%s, %s, %s\)$`,
 		wordRegex, floatRegex, floatRegex, floatRegex), createVector)
+	ctx.Step(fmt.Sprintf(`^%s ← normalize\(%s\)$`, wordRegex, wordRegex), createVectorNormalize)
 
 	// Check tuples are.
 	ctx.Step(fmt.Sprintf(`^%s\.%s = %s$`, wordRegex, wordRegex, floatRegex),
@@ -160,4 +208,21 @@ func initializeScenario(ctx *godog.ScenarioContext) {
 		isEqualSubPointRes)
 	ctx.Step(fmt.Sprintf(`^-%s = tuple\(%s, %s, %s, %s\)$`,
 		wordRegex, floatRegex, floatRegex, floatRegex, floatRegex), isEqualNegate)
+	ctx.Step(fmt.Sprintf(`^%s \* %s = tuple\(%s, %s, %s, %s\)$`,
+		wordRegex, floatRegex, floatRegex, floatRegex, floatRegex, floatRegex),
+		isEqualMulTwoTuples)
+	ctx.Step(fmt.Sprintf(`^%s / %s = tuple\(%s, %s, %s, %s\)$`,
+		wordRegex, floatRegex, floatRegex, floatRegex, floatRegex, floatRegex),
+		isEqualDivTwoTuples)
+
+	ctx.Step(fmt.Sprintf(`^magnitude\(%s\) = %s$`, wordRegex, floatRegex), isEqualMag)
+	ctx.Step(fmt.Sprintf(`^normalize\(%s\) = vector\(%s, %s, %s\)$`,
+		wordRegex, floatRegex, floatRegex, floatRegex), isEqualNorm)
+
+	ctx.Step(fmt.Sprintf(`^dot\(%s, %s\) = %s$`,
+		wordRegex, wordRegex, floatRegex),
+		isEqualDot)
+	ctx.Step(fmt.Sprintf(`^cross\(%s, %s\) = vector\(%s, %s, %s\)$`,
+		wordRegex, wordRegex, floatRegex, floatRegex, floatRegex),
+		isEqualCross)
 }

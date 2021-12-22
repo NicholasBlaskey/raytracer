@@ -1,5 +1,9 @@
 package tuple
 
+import (
+	"math"
+)
+
 type Tuple [4]float64
 
 func New(x, y, z, w float64) Tuple {
@@ -24,4 +28,33 @@ func (t Tuple) Sub(x Tuple) Tuple {
 
 func (t Tuple) Negate() Tuple {
 	return Tuple{-t[0], -t[1], -t[2], -t[3]}
+}
+
+func (t Tuple) Mul(x float64) Tuple {
+	return Tuple{t[0] * x, t[1] * x, t[2] * x, t[3] * x}
+}
+
+func (t Tuple) Div(x float64) Tuple {
+	return Tuple{t[0] / x, t[1] / x, t[2] / x, t[3] / x}
+}
+
+func (t Tuple) Magnitude() float64 {
+	return math.Sqrt(t[0]*t[0] + t[1]*t[1] + t[2]*t[2] + t[3]*t[3])
+}
+
+func (t Tuple) Normalize() Tuple {
+	return t.Div(t.Magnitude())
+}
+
+func (t Tuple) Dot(x Tuple) float64 {
+	return t[0]*x[0] + t[1]*x[1] + t[2]*x[2] + t[3]*x[3]
+}
+
+func (t Tuple) Cross(x Tuple) Tuple {
+	return Tuple{
+		t[1]*x[2] - t[2]*x[1],
+		t[2]*x[0] - t[0]*x[2],
+		t[0]*x[1] - t[1]*x[0],
+		0.0,
+	}
 }

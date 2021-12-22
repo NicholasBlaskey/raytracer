@@ -1,18 +1,22 @@
-package tuple
+package main_test
 
 import (
 	"context"
 	"fmt"
 	"math"
-
 	"testing"
+
+	"github.com/nicholasblaskey/raytracer/canvas"
+	"github.com/nicholasblaskey/raytracer/tuple"
 
 	"github.com/cucumber/godog"
 )
 
+// TODO refactor this into its own package
 const (
 	epsilon    = 0.00001
 	wordRegex  = `([A-Za-z0-9^\s]+)`
+	intRegex   = `(\d+)`
 	floatRegex = `(\-*\d+\.\d+)`
 )
 
@@ -22,7 +26,7 @@ func TestFeatures(t *testing.T) {
 
 		Options: &godog.Options{
 			Format:   "pretty",
-			Paths:    []string{"."},
+			Paths:    []string{"features"},
 			TestingT: t, // Testing instance that will run subtests.
 		},
 	}
@@ -33,10 +37,11 @@ func TestFeatures(t *testing.T) {
 }
 
 // TODO make this a context type!
-var tuples map[string]Tuple
+var tuples map[string]tuple.Tuple
+var canvases map[string]*canvas.Canvas
 
-func createTuple(tuple string, x, y, z, w float64) {
-	tuples[tuple] = Tuple{x, y, z, w}
+func createTuple(t string, x, y, z, w float64) {
+	tuples[t] = tuple.Tuple{x, y, z, w}
 }
 
 func compareFloat(a, b float64) bool {
@@ -182,25 +187,26 @@ func tupleIsA(tuple string, isOrNotIs string, expected string) error {
 	return nil
 }
 
-func createVector(tuple string, x, y, z float64) {
-	tuples[tuple] = Vector(x, y, z)
+func createVector(t string, x, y, z float64) {
+	tuples[t] = tuple.Vector(x, y, z)
 }
 
-func createColor(tuple string, x, y, z float64) {
-	tuples[tuple] = Color(x, y, z)
+func createColor(t string, x, y, z float64) {
+	tuples[t] = tuple.Color(x, y, z)
 }
 
-func createVectorNormalize(newTuple string, tuple string) {
-	tuples[newTuple] = tuples[tuple].Normalize()
+func createVectorNormalize(newTuple string, t string) {
+	tuples[newTuple] = tuples[t].Normalize()
 }
 
-func createPoint(tuple string, x, y, z float64) {
-	tuples[tuple] = Point(x, y, z)
+func createPoint(t string, x, y, z float64) {
+	tuples[t] = tuple.Point(x, y, z)
 }
 
 func initializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Before(func(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
-		tuples = make(map[string]Tuple)
+		tuples = make(map[string]tuple.Tuple)
+		canvases = make(map[string]*canvas.Canvas)
 
 		return ctx, nil
 	})
@@ -262,4 +268,53 @@ func initializeScenario(ctx *godog.ScenarioContext) {
 		wordRegex, wordRegex, floatRegex, floatRegex, floatRegex),
 		isEqualColorMul)
 
+	// Canvas
+	ctx.Step(fmt.Sprintf(`^%s ← canvas\(%s, %s\)$`,
+		wordRegex, intRegex, intRegex), createCanvas)
+	ctx.Step(fmt.Sprintf(`^%s\.%s = %s$`,
+		wordRegex, wordRegex, intRegex), checkCanvasWidthOrHeight)
+	ctx.Step(fmt.Sprintf(`^every pixel of %s is color\(%s, %s, %s\)$`,
+		wordRegex, floatRegex, floatRegex, floatRegex), canvasEveryPixelIs)
+	ctx.Step(fmt.Sprintf(`^write_pixel\(%s, %s, %s, %s\)$`,
+		wordRegex, intRegex, intRegex, wordRegex), canvasWritePixel)
+	ctx.Step(fmt.Sprintf(`^pixel_at\(%s, %s, %s\) = %s$`,
+		wordRegex, intRegex, intRegex, wordRegex), canvasAssertPixel)
+
+}
+
+func createCanvas(canv string, w, h int) {
+	canvases[canv] = canvas.New(w, h)
+}
+
+func checkCanvasWidthOrHeight(canv, widthOrHeight string, v int) error {
+	gotten := canvases[canv].Height
+	if widthOrHeight == "width" {
+		gotten = canvases[canv].Width
+	}
+
+	if gotten != v {
+		return fmt.Errorf("canvas %s expected %s to be %d got %d",
+			canv, widthOrHeight, v, gotten)
+	}
+	return nil
+}
+
+func canvasEveryPixelIs(canv string, x, y, z float64) error {
+	c := canvases[canv]
+	for i := 0; i < len(c.Pixels); i += 3 {
+		if c.Pixels[i] != x || c.Pixels[i+1] != y || c.Pixels[i+2] != z {
+			return fmt.Errorf("canvas %s expected color(%f, %f, %f) color(%f, %f, %f)",
+				canv, c.Pixels[i], c.Pixels[i+1], c.Pixels[i+2], x, y, z)
+		}
+	}
+	return nil
+}
+
+func canvasWritePixel(canv string, x, y int, color string) {
+	canvases[canv].WritePixel(tuples[color], x, y)
+}
+
+func canvasAssertPixel(canv string, x, y int, color string) error {
+	gotten := canvases[canv].ReadPixel(x, y)
+	return isEqualTuple(color, gotten[0], gotten[1], gotten[2], gotten[3])
 }

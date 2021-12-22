@@ -12,7 +12,7 @@ import (
 
 const (
 	epsilon    = 0.00001
-	wordRegex  = `([^\s]+)`
+	wordRegex  = `([A-Za-z0-9^\s]+)`
 	floatRegex = `(\-*\d+\.\d+)`
 )
 
@@ -31,36 +31,6 @@ func TestFeatures(t *testing.T) {
 		t.Fatal("non-zero status returned, failed to run feature tests")
 	}
 }
-
-/*
-func aIsAPoint() error {
-	return godog.ErrPending
-}
-
-func aIsNotAVector() error {
-	return godog.ErrPending
-}
-
-func aTuple(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8 int) error {
-	return godog.ErrPending
-}
-
-func aw(arg1, arg2 int) error {
-	return godog.ErrPending
-}
-
-func ax(arg1, arg2 int) error {
-	return godog.ErrPending
-}
-
-func ay(arg1, arg2 int) error {
-	return godog.ErrPending
-}
-
-func az(arg1, arg2 int) error {
-	return godog.ErrPending
-}
-*/
 
 // TODO make this a context type!
 var tuples map[string]Tuple
@@ -90,6 +60,46 @@ func tupleValueEqual(tuple string, component string, v float64) error {
 	return nil
 }
 
+func isEqualTuple(tuple string, x, y, z, w float64) error {
+	if !(compareFloat(x, tuples[tuple][0]) &&
+		compareFloat(y, tuples[tuple][1]) &&
+		compareFloat(z, tuples[tuple][2]) &&
+		compareFloat(w, tuples[tuple][3])) {
+		return fmt.Errorf("expected %s (%f, %f, %f, %f) to equal (%f, %f, %f, %f)",
+			tuple, x, y, z, w,
+			tuples[tuple][0], tuples[tuple][1], tuples[tuple][2], tuples[tuple][3])
+	}
+	return nil
+}
+
+func isEqualNegate(tuple string, x, y, z, w float64) error {
+	newTuple := "-" + tuple
+	tuples[newTuple] = tuples[tuple].Negate()
+
+	return isEqualTuple(newTuple, x, y, z, w)
+}
+
+func isEqualAddTwoTuples(tupleA, tupleB string, x, y, z, w float64) error {
+	newTuple := fmt.Sprintf("%s + %s", tupleA, tupleB)
+	tuples[newTuple] = tuples[tupleA].Add(tuples[tupleB])
+
+	return isEqualTuple(newTuple, x, y, z, w)
+}
+
+func isEqualSubVecRes(tupleA, tupleB string, x, y, z float64) error {
+	newTuple := fmt.Sprintf("%s - %s", tupleA, tupleB)
+	tuples[newTuple] = tuples[tupleA].Sub(tuples[tupleB])
+
+	return isEqualTuple(newTuple, x, y, z, 0.0)
+}
+
+func isEqualSubPointRes(tupleA, tupleB string, x, y, z float64) error {
+	newTuple := fmt.Sprintf("%s - %s", tupleA, tupleB)
+	tuples[newTuple] = tuples[tupleA].Sub(tuples[tupleB])
+
+	return isEqualTuple(newTuple, x, y, z, 1.0)
+}
+
 func tupleIsA(tuple string, isOrNotIs string, expected string) error {
 	actual := "vector"
 	if tuples[tuple][3] == 1 {
@@ -108,6 +118,14 @@ func tupleIsA(tuple string, isOrNotIs string, expected string) error {
 	return nil
 }
 
+func createVector(tuple string, x, y, z float64) {
+	tuples[tuple] = Vector(x, y, z)
+}
+
+func createPoint(tuple string, x, y, z float64) {
+	tuples[tuple] = Point(x, y, z)
+}
+
 func initializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Before(func(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
 		tuples = make(map[string]Tuple)
@@ -115,20 +133,31 @@ func initializeScenario(ctx *godog.ScenarioContext) {
 		return ctx, nil
 	})
 
+	// Create tuples.
 	ctx.Step(fmt.Sprintf(`^%s ← tuple\(%s, %s, %s, %s\)$`,
 		wordRegex, floatRegex, floatRegex, floatRegex, floatRegex), createTuple)
+	ctx.Step(fmt.Sprintf(`^%s ← point\(%s, %s, %s\)$`,
+		wordRegex, floatRegex, floatRegex, floatRegex), createPoint)
+	ctx.Step(fmt.Sprintf(`^%s ← vector\(%s, %s, %s\)$`,
+		wordRegex, floatRegex, floatRegex, floatRegex), createVector)
+
+	// Check tuples are.
 	ctx.Step(fmt.Sprintf(`^%s\.%s = %s$`, wordRegex, wordRegex, floatRegex),
 		tupleValueEqual)
 	ctx.Step(fmt.Sprintf(`^%s (is|is not) a (point|vector)$`, wordRegex), tupleIsA)
+	ctx.Step(fmt.Sprintf(`^%s = tuple\(%s, %s, %s, %s\)$`,
+		wordRegex, floatRegex, floatRegex, floatRegex, floatRegex), isEqualTuple)
 
-	//ctx.Step("^\s is a point$", isAPoint)
-	/*
-		ctx.Step(`^a is a point$`, aIsAPoint)
-		ctx.Step(`^a is not a vector$`, aIsNotAVector)
-
-		ctx.Step(`^a\.w = (\d+)\.(\d+)$`, aw)
-		ctx.Step(`^a\.x = (\d+)\.(\d+)$`, ax)
-		ctx.Step(`^a\.y = -(\d+)\.(\d+)$`, ay)
-		ctx.Step(`^a\.z = (\d+)\.(\d+)$`, az)
-	*/
+	// Operations.
+	ctx.Step(fmt.Sprintf(`^%s \+ %s = tuple\(%s, %s, %s, %s\)$`,
+		wordRegex, wordRegex, floatRegex, floatRegex, floatRegex, floatRegex),
+		isEqualAddTwoTuples)
+	ctx.Step(fmt.Sprintf(`^%s - %s = vector\(%s, %s, %s\)$`,
+		wordRegex, wordRegex, floatRegex, floatRegex, floatRegex),
+		isEqualSubVecRes)
+	ctx.Step(fmt.Sprintf(`^%s - %s = point\(%s, %s, %s\)$`,
+		wordRegex, wordRegex, floatRegex, floatRegex, floatRegex),
+		isEqualSubPointRes)
+	ctx.Step(fmt.Sprintf(`^-%s = tuple\(%s, %s, %s, %s\)$`,
+		wordRegex, floatRegex, floatRegex, floatRegex, floatRegex), isEqualNegate)
 }

@@ -18,6 +18,13 @@ func Vector(x, y, z float64) Tuple {
 	return Tuple{x, y, z, 0.0}
 }
 
+// TODO should color be its own type? Or is tuple fine?
+// We will allocate more data than we need with 4 points?!?!?
+// This is prob fine for now.
+func Color(x, y, z float64) Tuple {
+	return Tuple{x, y, z, 0.0}
+}
+
 func (t Tuple) Add(x Tuple) Tuple {
 	return Tuple{t[0] + x[0], t[1] + x[1], t[2] + x[2], t[3] + x[3]}
 }
@@ -32,6 +39,10 @@ func (t Tuple) Negate() Tuple {
 
 func (t Tuple) Mul(x float64) Tuple {
 	return Tuple{t[0] * x, t[1] * x, t[2] * x, t[3] * x}
+}
+
+func (t Tuple) ColorMul(x Tuple) Tuple {
+	return Tuple{t[0] * x[0], t[1] * x[1], t[2] * x[2], t[3] * x[3]}
 }
 
 func (t Tuple) Div(x float64) Tuple {

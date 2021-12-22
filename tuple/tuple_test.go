@@ -45,9 +45,9 @@ func compareFloat(a, b float64) bool {
 
 func tupleValueEqual(tuple string, component string, v float64) error {
 	index := 0
-	if component == "y" {
+	if component == "y" || component == "green" {
 		index = 1
-	} else if component == "z" {
+	} else if component == "z" || component == "blue" {
 		index = 2
 	} else if component == "w" {
 		index = 3
@@ -86,11 +86,25 @@ func isEqualAddTwoTuples(tupleA, tupleB string, x, y, z, w float64) error {
 	return isEqualTuple(newTuple, x, y, z, w)
 }
 
+func isEqualAddTwoColors(tupleA, tupleB string, x, y, z float64) error {
+	newTuple := fmt.Sprintf("%s + %s", tupleA, tupleB)
+	tuples[newTuple] = tuples[tupleA].Add(tuples[tupleB])
+
+	return isEqualTuple(newTuple, x, y, z, 0.0)
+}
+
 func isEqualMulTwoTuples(tupleA string, mulAmount, x, y, z, w float64) error {
 	newTuple := fmt.Sprintf("%s * %f", tupleA, mulAmount)
 	tuples[newTuple] = tuples[tupleA].Mul(mulAmount)
 
 	return isEqualTuple(newTuple, x, y, z, w)
+}
+
+func isEqualColorScalarMul(tupleA string, mulAmount, x, y, z float64) error {
+	newTuple := fmt.Sprintf("%s * %f", tupleA, mulAmount)
+	tuples[newTuple] = tuples[tupleA].Mul(mulAmount)
+
+	return isEqualTuple(newTuple, x, y, z, 0.0)
 }
 
 func isEqualDivTwoTuples(tupleA string, divAmount, x, y, z, w float64) error {
@@ -125,6 +139,13 @@ func isEqualDot(tupleA, tupleB string, dot float64) error {
 func isEqualCross(tupleA, tupleB string, x, y, z float64) error {
 	newTuple := fmt.Sprintf("cross(%s, %s)", tupleA, tupleB)
 	tuples[newTuple] = tuples[tupleA].Cross(tuples[tupleB])
+
+	return isEqualTuple(newTuple, x, y, z, 0.0)
+}
+
+func isEqualColorMul(tupleA, tupleB string, x, y, z float64) error {
+	newTuple := fmt.Sprintf("cross(%s, %s)", tupleA, tupleB)
+	tuples[newTuple] = tuples[tupleA].ColorMul(tuples[tupleB])
 
 	return isEqualTuple(newTuple, x, y, z, 0.0)
 }
@@ -165,6 +186,10 @@ func createVector(tuple string, x, y, z float64) {
 	tuples[tuple] = Vector(x, y, z)
 }
 
+func createColor(tuple string, x, y, z float64) {
+	tuples[tuple] = Color(x, y, z)
+}
+
 func createVectorNormalize(newTuple string, tuple string) {
 	tuples[newTuple] = tuples[tuple].Normalize()
 }
@@ -187,6 +212,8 @@ func initializeScenario(ctx *godog.ScenarioContext) {
 		wordRegex, floatRegex, floatRegex, floatRegex), createPoint)
 	ctx.Step(fmt.Sprintf(`^%s ← vector\(%s, %s, %s\)$`,
 		wordRegex, floatRegex, floatRegex, floatRegex), createVector)
+	ctx.Step(fmt.Sprintf(`^%s ← color\(%s, %s, %s\)$`,
+		wordRegex, floatRegex, floatRegex, floatRegex), createVector)
 	ctx.Step(fmt.Sprintf(`^%s ← normalize\(%s\)$`, wordRegex, wordRegex), createVectorNormalize)
 
 	// Check tuples are.
@@ -200,7 +227,10 @@ func initializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^%s \+ %s = tuple\(%s, %s, %s, %s\)$`,
 		wordRegex, wordRegex, floatRegex, floatRegex, floatRegex, floatRegex),
 		isEqualAddTwoTuples)
-	ctx.Step(fmt.Sprintf(`^%s - %s = vector\(%s, %s, %s\)$`,
+	ctx.Step(fmt.Sprintf(`^%s \+ %s = color\(%s, %s, %s\)$`,
+		wordRegex, wordRegex, floatRegex, floatRegex, floatRegex),
+		isEqualAddTwoColors)
+	ctx.Step(fmt.Sprintf(`^%s - %s = (?:vector|color)\(%s, %s, %s\)$`,
 		wordRegex, wordRegex, floatRegex, floatRegex, floatRegex),
 		isEqualSubVecRes)
 	ctx.Step(fmt.Sprintf(`^%s - %s = point\(%s, %s, %s\)$`,
@@ -211,6 +241,9 @@ func initializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^%s \* %s = tuple\(%s, %s, %s, %s\)$`,
 		wordRegex, floatRegex, floatRegex, floatRegex, floatRegex, floatRegex),
 		isEqualMulTwoTuples)
+	ctx.Step(fmt.Sprintf(`^%s \* %s = color\(%s, %s, %s\)$`,
+		wordRegex, floatRegex, floatRegex, floatRegex, floatRegex),
+		isEqualColorScalarMul)
 	ctx.Step(fmt.Sprintf(`^%s / %s = tuple\(%s, %s, %s, %s\)$`,
 		wordRegex, floatRegex, floatRegex, floatRegex, floatRegex, floatRegex),
 		isEqualDivTwoTuples)
@@ -225,4 +258,8 @@ func initializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^cross\(%s, %s\) = vector\(%s, %s, %s\)$`,
 		wordRegex, wordRegex, floatRegex, floatRegex, floatRegex),
 		isEqualCross)
+	ctx.Step(fmt.Sprintf(`^%s \* %s = color\(%s, %s, %s\)$`,
+		wordRegex, wordRegex, floatRegex, floatRegex, floatRegex),
+		isEqualColorMul)
+
 }

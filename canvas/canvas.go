@@ -1,6 +1,8 @@
 package canvas
 
 import (
+	"fmt"
+
 	"github.com/nicholasblaskey/raytracer/tuple"
 )
 
@@ -26,4 +28,14 @@ func (c *Canvas) ReadPixel(x, y int) tuple.Tuple {
 		c.Pixels[y*3+x+1],
 		c.Pixels[y*3+x+2],
 	}
+}
+
+func (c *Canvas) ToPPM() string {
+	ppm := fmt.Sprintf("%s\n%d %d\n%d", "P3", c.Width, c.Height, 255)
+
+	return ppm
+}
+
+func (c *Canvas) Save(path string) error {
+	return nil
 }

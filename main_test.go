@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"strings"
 	"testing"
 
 	"github.com/nicholasblaskey/raytracer/canvas"
@@ -39,6 +40,7 @@ func TestFeatures(t *testing.T) {
 // TODO make this a context type!
 var tuples map[string]tuple.Tuple
 var canvases map[string]*canvas.Canvas
+var ppms map[string]string
 
 func createTuple(t string, x, y, z, w float64) {
 	tuples[t] = tuple.Tuple{x, y, z, w}
@@ -207,6 +209,7 @@ func initializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Before(func(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
 		tuples = make(map[string]tuple.Tuple)
 		canvases = make(map[string]*canvas.Canvas)
+		ppms = make(map[string]string)
 
 		return ctx, nil
 	})
@@ -279,7 +282,10 @@ func initializeScenario(ctx *godog.ScenarioContext) {
 		wordRegex, intRegex, intRegex, wordRegex), canvasWritePixel)
 	ctx.Step(fmt.Sprintf(`^pixel_at\(%s, %s, %s\) = %s$`,
 		wordRegex, intRegex, intRegex, wordRegex), canvasAssertPixel)
-
+	ctx.Step(fmt.Sprintf(`^%s ← canvas_to_ppm\(%s\)$`,
+		wordRegex, wordRegex), canvasToPPM)
+	ctx.Step(fmt.Sprintf(`^lines %s-%s of %s are$`,
+		intRegex, intRegex, wordRegex), ppmLinesAre)
 }
 
 func createCanvas(canv string, w, h int) {
@@ -317,4 +323,22 @@ func canvasWritePixel(canv string, x, y int, color string) {
 func canvasAssertPixel(canv string, x, y int, color string) error {
 	gotten := canvases[canv].ReadPixel(x, y)
 	return isEqualTuple(color, gotten[0], gotten[1], gotten[2], gotten[3])
+}
+
+func canvasToPPM(ppm string, canv string) {
+	ppms[ppm] = canvases[canv].ToPPM()
+}
+
+func ppmLinesAre(from, to int, ppm string, lines string) error {
+	ppmSplit := strings.Split(ppms[ppm], "\n")
+	linesSplit := strings.Split(lines, "\n")
+	for i := from; i <= to; i++ {
+		actual := ppmSplit[i-1]
+
+		if actual != linesSplit[i-from] {
+			return fmt.Errorf("For ppm file %s expected line %d to be \n%s\n got \n%s\n",
+				ppm, i, actual, linesSplit[i-from])
+		}
+	}
+	return nil
 }

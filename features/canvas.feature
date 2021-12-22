@@ -12,3 +12,13 @@ Scenario: Writing pixels to a canvas
   When write_pixel(c, 2, 3, red)
   Then pixel_at(c, 2, 3) = red
 
+Scenario: Constructing the PPM header
+  Given c ← canvas(5, 3)
+  When ppm ← canvas_to_ppm(c)
+  Then lines 1-3 of ppm are
+    """
+    P3
+    5 3
+    255
+    """
+

@@ -286,6 +286,10 @@ func initializeScenario(ctx *godog.ScenarioContext) {
 		wordRegex, wordRegex), canvasToPPM)
 	ctx.Step(fmt.Sprintf(`^lines %s-%s of %s are$`,
 		intRegex, intRegex, wordRegex), ppmLinesAre)
+	ctx.Step(fmt.Sprintf(`^every pixel of %s is set to color\(%s, %s, %s\)$`,
+		wordRegex, floatRegex, floatRegex, floatRegex), canvasEveryPixelSetTo)
+	ctx.Step(fmt.Sprintf(`^%s ends with a newline character$`,
+		wordRegex), ppmEndsWithNewLine)
 }
 
 func createCanvas(canv string, w, h int) {
@@ -335,10 +339,28 @@ func ppmLinesAre(from, to int, ppm string, lines string) error {
 	for i := from; i <= to; i++ {
 		actual := ppmSplit[i-1]
 
-		if actual != linesSplit[i-from] {
+		//fmt.Println("ACTUAL LINESPSLIT", ppmSplit, linesSplit)
+		//fmt.Println(i, actual, linesSplit[i-from])
+		if strings.Trim(actual, " ") != strings.Trim(linesSplit[i-from], " ") {
 			return fmt.Errorf("For ppm file %s expected line %d to be \n%s\n got \n%s\n",
-				ppm, i, actual, linesSplit[i-from])
+				ppm, i, linesSplit[i-from], actual)
 		}
+	}
+	return nil
+}
+
+func canvasEveryPixelSetTo(canv string, r, g, b float64) {
+	c := canvases[canv]
+	for x := 0; x < c.Width; x++ {
+		for y := 0; y < c.Height; y++ {
+			c.WritePixel(tuple.Color(r, g, b), x, y)
+		}
+	}
+}
+
+func ppmEndsWithNewLine(ppm string) error {
+	if char := ppms[ppm][len(ppms[ppm])-1]; char != '\n' {
+		return fmt.Errorf("PPM ends with %s instead of new line", string(char))
 	}
 	return nil
 }

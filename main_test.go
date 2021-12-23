@@ -39,10 +39,12 @@ func initializeScenario(ctx *godog.ScenarioContext) {
 	ctx.Before(func(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
 		tuplesBefore(ctx, sc)
 		canvasBefore(ctx, sc)
+		matrixBefore(ctx, sc)
 
 		return ctx, nil
 	})
 
 	tuplesSteps(ctx)
 	canvasSteps(ctx)
+	matrixSteps(ctx)
 }

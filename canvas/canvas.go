@@ -4,6 +4,10 @@ import (
 	"fmt"
 	"math"
 
+	"os"
+	"strconv"
+	"strings"
+
 	"github.com/nicholasblaskey/raytracer/tuple"
 )
 
@@ -40,7 +44,8 @@ func (c *Canvas) ReadPixel(x, y int) tuple.Tuple {
 }
 
 func (c *Canvas) ToPPM() string {
-	ppm := fmt.Sprintf("%s\n%d %d\n%d", "P3", c.Width, c.Height, 255)
+	var sb strings.Builder
+	sb.WriteString(fmt.Sprintf("%s\n%d %d\n%d", "P3", c.Width, c.Height, 255))
 
 	lineLen := 0
 	pixelCounter := 0
@@ -57,22 +62,22 @@ func (c *Canvas) ToPPM() string {
 					v = 0.0
 				}
 
-				toAdd := fmt.Sprintf("%d", int(math.Round(v*255.0)))
+				toAdd := strconv.Itoa(int(math.Round(v * 255.0)))
 				if len(toAdd)+1+lineLen > maxLineLength || pixelCounter%15 == 0 {
-					ppm += "\n"
+					sb.WriteString("\n")
 					lineLen = 0
 				}
-				ppm += toAdd + " "
+				sb.WriteString(toAdd + " ")
 				pixelCounter += 1
 			}
 		}
 	}
 
-	ppm += "\n"
+	sb.WriteString("\n")
 
-	return ppm
+	return sb.String()
 }
 
 func (c *Canvas) Save(path string) error {
-	return nil
+	return os.WriteFile(path, []byte(c.ToPPM()), 0644)
 }

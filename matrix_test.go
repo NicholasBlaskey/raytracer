@@ -15,6 +15,7 @@ var matrices map[string]matrix.Matrix
 
 func matrixBefore(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
 	matrices = make(map[string]matrix.Matrix)
+	matrices["identity_matrix"] = matrix.Ident4()
 
 	return ctx, nil
 }
@@ -29,6 +30,14 @@ func matrixSteps(ctx *godog.ScenarioContext) {
 		wordRegex, wordRegex), matrixEquals)
 	ctx.Step(fmt.Sprintf(`^%s != %s$`,
 		wordRegex, wordRegex), matrixNotEquals)
+
+	ctx.Step(fmt.Sprintf(`^%s \* %s is the following 4x4 matrix:$`,
+		wordRegex, wordRegex), matrixMulEquals)
+	ctx.Step(fmt.Sprintf(`^%s \* %s = %s$`,
+		wordRegex, wordRegex, wordRegex), matrixMulEqualsVar)
+	ctx.Step(fmt.Sprintf(`%s \* %s = tuple\(%s, %s, %s, %s\)`,
+		wordRegex, wordRegex, floatRegex, floatRegex, floatRegex, floatRegex),
+		matrixMulTupleEquals)
 
 }
 
@@ -79,4 +88,29 @@ func matrixNotEquals(m0, m1 string) error {
 			m0, mat0, m1, mat1)
 	}
 	return nil
+}
+
+func matrixMulEquals(m0, m1 string, data *godog.Table) error {
+	expectedM := fmt.Sprintf("expected%s*%s", m0, m1)
+	err := matrixCreate4(expectedM, data)
+	if err != nil {
+		return err
+	}
+	return matrixMulEqualsVar(m0, m1, expectedM)
+}
+
+func matrixMulEqualsVar(m0, m1, expected string) error {
+	mat0 := matrices[m0].(matrix.Mat4)
+	mat1 := matrices[m1].(matrix.Mat4)
+	actualM := fmt.Sprintf("actual%s*%s", m0, m1)
+	matrices[actualM] = mat0.Mul4(mat1)
+
+	return matrixEquals(actualM, expected)
+}
+
+func matrixMulTupleEquals(m, t string, x, y, z, w float64) error {
+	actual := fmt.Sprintf("%s * %s", m, t)
+	tuples[actual] = matrices[m].(matrix.Mat4).Mul4x1(tuples[t])
+
+	return isEqualTuple(actual, x, y, z, w)
 }

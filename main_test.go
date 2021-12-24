@@ -10,7 +10,7 @@ import (
 
 const (
 	epsilon    = 0.00001
-	wordRegex  = `([A-Za-z0-9^\s]+)`
+	wordRegex  = `([_A-Za-z0-9^\s]+)`
 	intRegex   = `(\d+)`
 	floatRegex = `(\-*\d+\.\d+)`
 )

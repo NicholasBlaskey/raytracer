@@ -11,20 +11,10 @@ import (
 	"github.com/cucumber/godog"
 )
 
-/*
-var mat4s map[string]matrix.Mat4
-var mat3s map[string]matrix.Mat3
-var mat2s map[string]matrix.Mat2
-*/
 var matrices map[string]matrix.Matrix
 
 func matrixBefore(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
 	matrices = make(map[string]matrix.Matrix)
-	/*
-		mat4s = make(map[string]matrix.Mat4)
-		mat3s = make(map[string]matrix.Mat3)
-		mat2s = make(map[string]matrix.Mat2)
-	*/
 
 	return ctx, nil
 }
@@ -32,8 +22,14 @@ func matrixBefore(ctx context.Context, sc *godog.Scenario) (context.Context, err
 func matrixSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^the following %sx%s matrix %s:$`,
 		intRegex, intRegex, wordRegex), matrixCreate)
+	ctx.Step(fmt.Sprintf(`^the following matrix %s:$`, wordRegex), matrixCreate4)
 	ctx.Step(fmt.Sprintf(`^%s\[%s,%s\] = %s$`,
 		wordRegex, intRegex, intRegex, floatRegex), matrixElementEqual)
+	ctx.Step(fmt.Sprintf(`^%s = %s$`,
+		wordRegex, wordRegex), matrixEquals)
+	ctx.Step(fmt.Sprintf(`^%s != %s$`,
+		wordRegex, wordRegex), matrixNotEquals)
+
 }
 
 func matrixElementEqual(mat string, i, j int, expected float64) error {
@@ -58,5 +54,29 @@ func matrixCreate(n, m int, mat string, data *godog.Table) error {
 	}
 
 	matrices[mat] = matrix.FromRows(rows)
+	return nil
+}
+
+func matrixCreate4(mat string, data *godog.Table) error {
+	return matrixCreate(4, 4, mat, data)
+}
+
+func matrixEquals(m0, m1 string) error {
+	mat0 := matrices[m0].(matrix.Mat4)
+	mat1 := matrices[m1].(matrix.Mat4)
+	if !mat0.Equals(mat1) {
+		return fmt.Errorf("Expected %s \n%s to equal %s \n%s",
+			m0, mat0, m1, mat1)
+	}
+	return nil
+}
+
+func matrixNotEquals(m0, m1 string) error {
+	mat0 := matrices[m0].(matrix.Mat4)
+	mat1 := matrices[m1].(matrix.Mat4)
+	if mat0.Equals(mat1) {
+		return fmt.Errorf("Expected %s \n%s to not equal %s \n%s",
+			m0, mat0, m1, mat1)
+	}
 	return nil
 }

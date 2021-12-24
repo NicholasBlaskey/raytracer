@@ -33,3 +33,29 @@ Scenario: A 3x3 matrix ought to be representable
     And M[2,2] = 1.0
     And M[2,0] = 0.0
     And M[0,2] = -9.0
+
+Scenario: Matrix equality with identical matrices
+  Given the following matrix A:
+      | 1 | 2 | 3 | 4 |
+      | 5 | 6 | 7 | 8 |
+      | 9 | 8 | 7 | 6 |
+      | 5 | 4 | 3 | 2 |
+    And the following matrix B:
+      | 1 | 2 | 3 | 4 |
+      | 5 | 6 | 7 | 8 |
+      | 9 | 8 | 7 | 6 |
+      | 5 | 4 | 3 | 2 |
+  Then A = B
+
+Scenario: Matrix equality with different matrices
+  Given the following matrix A:
+      | 1 | 2 | 3 | 4 |
+      | 5 | 6 | 7 | 8 |
+      | 9 | 8 | 7 | 6 |
+      | 5 | 4 | 3 | 2 |
+    And the following matrix B:
+      | 2 | 3 | 4 | 5 |
+      | 6 | 7 | 8 | 9 |
+      | 8 | 7 | 6 | 5 |
+      | 4 | 3 | 2 | 1 |
+  Then A != B

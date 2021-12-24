@@ -17,6 +17,7 @@ func FloatEquals(a, b float64) bool {
 // Column major.
 type Matrix interface {
 	At(int, int) float64
+	Det() float64
 }
 
 func FromRows(rows [][]float64) Matrix {
@@ -108,6 +109,15 @@ func (a Mat4) Mul4x1(b tuple.Tuple) tuple.Tuple {
 	}
 }
 
+func (m Mat4) T() Mat4 {
+	return Mat4{
+		m[0], m[4], m[8], m[12],
+		m[1], m[5], m[9], m[13],
+		m[2], m[6], m[10], m[14],
+		m[3], m[7], m[11], m[15],
+	}
+}
+
 func (m Mat4) String() string {
 	out := ""
 	for y := 0; y < 4; y++ {
@@ -129,4 +139,16 @@ type Mat2 [4]float64
 
 func (m Mat2) At(i, j int) float64 {
 	return m[i+j*2]
+}
+
+func (m Mat4) Det() float64 {
+	return 0
+}
+
+func (m Mat3) Det() float64 {
+	return 0
+}
+
+func (m Mat2) Det() float64 {
+	return m[0]*m[3] - m[1]*m[2]
 }

@@ -39,6 +39,13 @@ func matrixSteps(ctx *godog.ScenarioContext) {
 		wordRegex, wordRegex, floatRegex, floatRegex, floatRegex, floatRegex),
 		matrixMulTupleEquals)
 
+	ctx.Step(fmt.Sprintf(`^%s ← transpose\(%s\)$`,
+		wordRegex, wordRegex), matrixTranspose)
+	ctx.Step(fmt.Sprintf(`^transpose\(%s\) is the following matrix:$`,
+		wordRegex), matrixTransposeEqual)
+
+	ctx.Step(fmt.Sprintf(`^determinant\(%s\) = %s$`,
+		wordRegex, floatRegex), matrixDeterminatEqual)
 }
 
 func matrixElementEqual(mat string, i, j int, expected float64) error {
@@ -113,4 +120,27 @@ func matrixMulTupleEquals(m, t string, x, y, z, w float64) error {
 	tuples[actual] = matrices[m].(matrix.Mat4).Mul4x1(tuples[t])
 
 	return isEqualTuple(actual, x, y, z, w)
+}
+
+func matrixTranspose(m0, m1 string) {
+	matrices[m0] = matrices[m1].(matrix.Mat4).T()
+}
+
+func matrixTransposeEqual(mat string, data *godog.Table) error {
+	actual := fmt.Sprintf("actual transpose(%s)", mat)
+	matrixTranspose(actual, mat)
+
+	expected := fmt.Sprintf("expected transpose(%s)", mat)
+	if err := matrixCreate4(expected, data); err != nil {
+		return nil
+	}
+	return matrixEquals(actual, expected)
+}
+
+func matrixDeterminatEqual(mat string, expected float64) error {
+	actual := matrices[mat].Det()
+	if actual != expected {
+		return fmt.Errorf("det(%s) expected %f got %f", mat, expected, actual)
+	}
+	return nil
 }

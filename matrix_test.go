@@ -46,6 +46,12 @@ func matrixSteps(ctx *godog.ScenarioContext) {
 
 	ctx.Step(fmt.Sprintf(`^determinant\(%s\) = %s$`,
 		wordRegex, floatRegex), matrixDeterminatEqual)
+	ctx.Step(fmt.Sprintf(`^%s ← submatrix\(%s, %s, %s\)$`,
+		wordRegex, wordRegex, intRegex, intRegex), matrixSubMatrix)
+	ctx.Step(fmt.Sprintf(`^submatrix\(%s, %s, %s\) is the following %sx%s matrix:$`,
+		wordRegex, intRegex, intRegex, intRegex, intRegex), matrixSubMatrixIs)
+	ctx.Step(fmt.Sprintf(`^minor\(%s, %s, %s\) = %s$`,
+		wordRegex, intRegex, intRegex, floatRegex), matrixMinorIs)
 }
 
 func matrixElementEqual(mat string, i, j int, expected float64) error {
@@ -78,11 +84,19 @@ func matrixCreate4(mat string, data *godog.Table) error {
 }
 
 func matrixEquals(m0, m1 string) error {
-	mat0 := matrices[m0].(matrix.Mat4)
-	mat1 := matrices[m1].(matrix.Mat4)
-	if !mat0.Equals(mat1) {
+	areEqual := false
+	switch mat0 := matrices[m0].(type) {
+	case matrix.Mat4:
+		areEqual = mat0.Equals(matrices[m1].(matrix.Mat4))
+	case matrix.Mat3:
+		areEqual = mat0.Equals(matrices[m1].(matrix.Mat3))
+	case matrix.Mat2:
+		areEqual = mat0.Equals(matrices[m1].(matrix.Mat2))
+	}
+
+	if !areEqual {
 		return fmt.Errorf("Expected %s \n%s to equal %s \n%s",
-			m0, mat0, m1, mat1)
+			m0, matrices[m0], m1, matrices[m1])
 	}
 	return nil
 }
@@ -141,6 +155,42 @@ func matrixDeterminatEqual(mat string, expected float64) error {
 	actual := matrices[mat].Det()
 	if actual != expected {
 		return fmt.Errorf("det(%s) expected %f got %f", mat, expected, actual)
+	}
+	return nil
+}
+
+func matrixSubMatrix(m0, m1 string, row, col int) {
+	switch m := matrices[m1].(type) {
+	case matrix.Mat4:
+		matrices[m0] = m.SubMatrix(row, col)
+	case matrix.Mat3:
+		matrices[m0] = m.SubMatrix(row, col)
+	}
+}
+
+func matrixSubMatrixIs(mat string, row, col, n, m int, data *godog.Table) error {
+	actual := fmt.Sprintf("actual submatrix(%s, %d, %d)", mat, row, col)
+	matrixSubMatrix(actual, mat, row, col)
+
+	expected := fmt.Sprintf("expected submatrix(%s, %d, %d)", mat, row, col)
+	if err := matrixCreate(n, m, expected, data); err != nil {
+		return nil
+	}
+	return matrixEquals(actual, expected)
+}
+
+func matrixMinorIs(mat string, row, col int, expected float64) error {
+	actual := -1.0
+	switch m := matrices[mat].(type) {
+	case matrix.Mat4:
+		actual = m.Minor(row, col)
+	case matrix.Mat3:
+		actual = m.Minor(row, col)
+	}
+
+	if actual != expected {
+		return fmt.Errorf("minor(%s, %d, %d) expected %f got %f",
+			mat, row, col, expected, actual)
 	}
 	return nil
 }

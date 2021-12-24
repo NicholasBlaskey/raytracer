@@ -75,6 +75,24 @@ func (a Mat4) Equals(b Mat4) bool {
 		FloatEquals(a[15], b[15])
 }
 
+func (a Mat3) Equals(b Mat3) bool {
+	for i := 0; i < len(a); i++ {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func (a Mat2) Equals(b Mat2) bool {
+	for i := 0; i < len(a); i++ {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
 func (a Mat4) Mul4(b Mat4) Mat4 {
 	// For performance reasons.
 	return Mat4{
@@ -118,10 +136,34 @@ func (m Mat4) T() Mat4 {
 	}
 }
 
+// TODO revisit some of these with generics released.
+// Could be a cool way to learn them
 func (m Mat4) String() string {
 	out := ""
 	for y := 0; y < 4; y++ {
 		for x := 0; x < 4; x++ {
+			out += fmt.Sprintf("%2f ", m.At(y, x))
+		}
+		out += "\n"
+	}
+	return out
+}
+
+func (m Mat3) String() string {
+	out := ""
+	for y := 0; y < 3; y++ {
+		for x := 0; x < 3; x++ {
+			out += fmt.Sprintf("%2f ", m.At(y, x))
+		}
+		out += "\n"
+	}
+	return out
+}
+
+func (m Mat2) String() string {
+	out := ""
+	for y := 0; y < 2; y++ {
+		for x := 0; x < 2; x++ {
 			out += fmt.Sprintf("%2f ", m.At(y, x))
 		}
 		out += "\n"
@@ -145,8 +187,47 @@ func (m Mat4) Det() float64 {
 	return 0
 }
 
+// TOOD optimize this.
+func (m Mat4) SubMatrix(x, y int) Mat3 {
+	m3 := Mat3{}
+	m3I := 0
+	for i := 0; i < len(m); i++ {
+		if x == i%4 || y == i/4 {
+			continue
+		}
+
+		m3[m3I] = m[i]
+		m3I++
+	}
+
+	return m3
+}
+
+func (m Mat4) Minor(x, y int) float64 {
+	return m.SubMatrix(x, y).Det()
+}
+
 func (m Mat3) Det() float64 {
 	return 0
+}
+
+func (m Mat3) SubMatrix(x, y int) Mat2 {
+	m2 := Mat2{}
+	m2I := 0
+	for i := 0; i < len(m); i++ {
+		if x == i%3 || y == i/3 {
+			continue
+		}
+
+		m2[m2I] = m[i]
+		m2I++
+	}
+
+	return m2
+}
+
+func (m Mat3) Minor(x, y int) float64 {
+	return m.SubMatrix(x, y).Det()
 }
 
 func (m Mat2) Det() float64 {

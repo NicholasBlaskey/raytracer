@@ -161,6 +161,36 @@ Scenario: Calculating a minor of a 3x3 matrix
   Then determinant(B) = 25.0
     And minor(A, 1, 0) = 25.0
   
+Scenario: Calculating a cofactor of a 3x3 matrix
+  Given the following 3x3 matrix A:
+      |  3 |  5 |  0 |
+      |  2 | -1 | -7 |
+      |  6 | -1 |  5 |
+  Then minor(A, 0, 0) = -12.0
+    And cofactor(A, 0, 0) = -12.0
+    And minor(A, 1, 0) = 25.0
+    And cofactor(A, 1, 0) = -25.0
 
+Scenario: Calculating the determinant of a 3x3 matrix
+  Given the following 3x3 matrix A:
+    |  1 |  2 |  6 |
+    | -5 |  8 | -4 |
+    |  2 |  6 |  4 |
+  Then cofactor(A, 0, 0) = 56.0
+    And cofactor(A, 0, 1) = 12.0
+    And cofactor(A, 0, 2) = -46.0
+    And determinant(A) = -196.0
+
+Scenario: Calculating the determinant of a 4x4 matrix
+  Given the following 4x4 matrix A:
+    | -2 | -8 |  3 |  5 |
+    | -3 |  1 |  7 |  3 |
+    |  1 |  2 | -9 |  6 |
+    | -6 |  7 |  7 | -9 |
+  Then cofactor(A, 0, 0) = 690.0
+    And cofactor(A, 0, 1) = 447.0
+    And cofactor(A, 0, 2) = 210.0
+    And cofactor(A, 0, 3) = 51.0
+    And determinant(A) = -4071.0
 
 

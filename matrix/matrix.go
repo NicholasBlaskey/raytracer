@@ -184,7 +184,10 @@ func (m Mat2) At(i, j int) float64 {
 }
 
 func (m Mat4) Det() float64 {
-	return 0
+	return m.Cofactor(0, 0)*m[0] +
+		m.Cofactor(0, 1)*m[4] +
+		m.Cofactor(0, 2)*m[8] +
+		m.Cofactor(0, 3)*m[12]
 }
 
 // TOOD optimize this.
@@ -207,8 +210,17 @@ func (m Mat4) Minor(x, y int) float64 {
 	return m.SubMatrix(x, y).Det()
 }
 
+func (m Mat4) Cofactor(x, y int) float64 {
+	if (x+y)%2 == 0 {
+		return m.Minor(x, y)
+	}
+	return -m.Minor(x, y)
+}
+
 func (m Mat3) Det() float64 {
-	return 0
+	return m.Cofactor(0, 0)*m[0] +
+		m.Cofactor(0, 1)*m[3] +
+		m.Cofactor(0, 2)*m[6]
 }
 
 func (m Mat3) SubMatrix(x, y int) Mat2 {
@@ -228,6 +240,13 @@ func (m Mat3) SubMatrix(x, y int) Mat2 {
 
 func (m Mat3) Minor(x, y int) float64 {
 	return m.SubMatrix(x, y).Det()
+}
+
+func (m Mat3) Cofactor(x, y int) float64 {
+	if (x+y)%2 == 0 {
+		return m.Minor(x, y)
+	}
+	return -m.Minor(x, y)
 }
 
 func (m Mat2) Det() float64 {

@@ -52,6 +52,9 @@ func matrixSteps(ctx *godog.ScenarioContext) {
 		wordRegex, intRegex, intRegex, intRegex, intRegex), matrixSubMatrixIs)
 	ctx.Step(fmt.Sprintf(`^minor\(%s, %s, %s\) = %s$`,
 		wordRegex, intRegex, intRegex, floatRegex), matrixMinorIs)
+	ctx.Step(fmt.Sprintf(`^cofactor\(%s, %s, %s\) = %s$`,
+		wordRegex, intRegex, intRegex, floatRegex), matrixCofactorEqual)
+
 }
 
 func matrixElementEqual(mat string, i, j int, expected float64) error {
@@ -155,6 +158,21 @@ func matrixDeterminatEqual(mat string, expected float64) error {
 	actual := matrices[mat].Det()
 	if actual != expected {
 		return fmt.Errorf("det(%s) expected %f got %f", mat, expected, actual)
+	}
+	return nil
+}
+
+func matrixCofactorEqual(mat string, row, col int, expected float64) error {
+	actual := -1.0
+	switch m := matrices[mat].(type) {
+	case matrix.Mat4:
+		actual = m.Cofactor(row, col)
+	case matrix.Mat3:
+		actual = m.Cofactor(row, col)
+	}
+	if actual != expected {
+		return fmt.Errorf("cofactor(%s, %d, %d) expected %f got %f",
+			mat, row, col, expected, actual)
 	}
 	return nil
 }

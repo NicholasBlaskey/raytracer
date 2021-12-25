@@ -40,6 +40,7 @@ func initializeScenario(ctx *godog.ScenarioContext) {
 		tuplesBefore(ctx, sc)
 		canvasBefore(ctx, sc)
 		matrixBefore(ctx, sc)
+		transformBefore(ctx, sc)
 
 		return ctx, nil
 	})
@@ -47,4 +48,5 @@ func initializeScenario(ctx *godog.ScenarioContext) {
 	tuplesSteps(ctx)
 	canvasSteps(ctx)
 	matrixSteps(ctx)
+	transformSteps(ctx)
 }

@@ -154,11 +154,18 @@ func matrixMulEquals(m0, m1 string, data *godog.Table) error {
 
 func matrixMulEqualsVar(m0, m1, expected string) error {
 	mat0 := matrices[m0].(matrix.Mat4)
-	mat1 := matrices[m1].(matrix.Mat4)
-	actualM := fmt.Sprintf("actual%s*%s", m0, m1)
-	matrices[actualM] = mat0.Mul4(mat1)
 
-	return matrixEquals(actualM, expected)
+	actual := fmt.Sprintf("actual%s*%s", m0, m1)
+	// Matrix * Matrix case
+	if mat1, ok := matrices[m1]; ok {
+		matrices[actual] = mat0.Mul4(mat1.(matrix.Mat4))
+
+		return matrixEquals(actual, expected)
+	}
+
+	// Matrix * tuple case
+	a := mat0.Mul4x1(tuples[m1])
+	return isEqualTuple(expected, a[0], a[1], a[2], a[3])
 }
 
 func matrixMulTupleEquals(m, t string, x, y, z, w float64) error {

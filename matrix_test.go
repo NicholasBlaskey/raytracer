@@ -26,11 +26,16 @@ func matrixSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^the following matrix %s:$`, wordRegex), matrixCreate4)
 	ctx.Step(fmt.Sprintf(`^%s\[%s,%s\] = %s$`,
 		wordRegex, intRegex, intRegex, floatRegex), matrixElementEqual)
+
+	ctx.Step(fmt.Sprintf(`^%s is the following 4x4 matrix:$`,
+		wordRegex), matrixEqual4)
 	ctx.Step(fmt.Sprintf(`^%s = %s$`,
 		wordRegex, wordRegex), matrixEquals)
 	ctx.Step(fmt.Sprintf(`^%s != %s$`,
 		wordRegex, wordRegex), matrixNotEquals)
 
+	ctx.Step(fmt.Sprintf(`^%s ← %s \* %s$`,
+		wordRegex, wordRegex, wordRegex), matrixMul)
 	ctx.Step(fmt.Sprintf(`^%s \* %s is the following 4x4 matrix:$`,
 		wordRegex, wordRegex), matrixMulEquals)
 	ctx.Step(fmt.Sprintf(`^%s \* %s = %s$`,
@@ -55,10 +60,18 @@ func matrixSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^cofactor\(%s, %s, %s\) = %s$`,
 		wordRegex, intRegex, intRegex, floatRegex), matrixCofactorEqual)
 
+	ctx.Step(fmt.Sprintf(`^%s (is|is not) invertible$`,
+		wordRegex), matrixCanInv)
+	ctx.Step(fmt.Sprintf(`^%s ← inverse\(%s\)$`,
+		wordRegex, wordRegex), matrixInv)
+	ctx.Step(fmt.Sprintf(`^inverse\(%s\) is the following 4x4 matrix:$`,
+		wordRegex), matrixInvEquals)
+	ctx.Step(fmt.Sprintf(`^%s \* inverse\(%s\) = %s`,
+		wordRegex, wordRegex, wordRegex), matrixInvMulEquals)
 }
 
 func matrixElementEqual(mat string, i, j int, expected float64) error {
-	if actual := matrices[mat].At(i, j); actual != expected {
+	if actual := matrices[mat].At(i, j); !compareFloat(actual, expected) {
 		return fmt.Errorf("For %s[%d,%d] expected %f got %f", mat, i, j, expected, actual)
 	}
 	return nil
@@ -84,6 +97,16 @@ func matrixCreate(n, m int, mat string, data *godog.Table) error {
 
 func matrixCreate4(mat string, data *godog.Table) error {
 	return matrixCreate(4, 4, mat, data)
+}
+
+func matrixEqual4(mat string, data *godog.Table) error {
+	expected := fmt.Sprintf("expected%s", mat)
+	err := matrixCreate(4, 4, expected, data)
+	if err != nil {
+		return err
+	}
+
+	return matrixEquals(mat, expected)
 }
 
 func matrixEquals(m0, m1 string) error {
@@ -112,6 +135,12 @@ func matrixNotEquals(m0, m1 string) error {
 			m0, mat0, m1, mat1)
 	}
 	return nil
+}
+
+// Only works for mat4s
+func matrixMul(res, m0, m1 string) {
+	matrices[res] = matrices[m0].(matrix.Mat4).Mul4(
+		matrices[m1].(matrix.Mat4))
 }
 
 func matrixMulEquals(m0, m1 string, data *godog.Table) error {
@@ -211,4 +240,38 @@ func matrixMinorIs(mat string, row, col int, expected float64) error {
 			mat, row, col, expected, actual)
 	}
 	return nil
+}
+
+func matrixCanInv(mat string, isOrIsNot string) error {
+	actual := matrices[mat].(matrix.Mat4).HasInv()
+	expected := isOrIsNot == "is"
+	if actual != expected {
+		return fmt.Errorf("%s.HasInv() expected %t got %t", mat,
+			expected, actual)
+	}
+	return nil
+}
+
+func matrixInv(m0, m1 string) {
+	matrices[m0] = matrices[m1].(matrix.Mat4).Inv()
+}
+
+func matrixInvEquals(mat string, data *godog.Table) error {
+	expected := fmt.Sprintf("expected Inverse(%s)", mat)
+	if err := matrixCreate(4, 4, expected, data); err != nil {
+		return err
+	}
+
+	actual := fmt.Sprintf("actual Inverse(%s)", mat)
+	matrixInv(actual, mat)
+
+	return matrixEquals(actual, expected)
+}
+
+func matrixInvMulEquals(m0, m1 string, expected string) error {
+	actual := fmt.Sprintf("%s * inverse(%s)", m0, m1)
+	matrices[actual] = matrices[m0].(matrix.Mat4).Mul4(
+		matrices[m1].(matrix.Mat4).Inv())
+
+	return matrixEquals(actual, expected)
 }

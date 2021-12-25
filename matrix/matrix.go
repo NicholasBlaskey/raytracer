@@ -190,6 +190,27 @@ func (m Mat4) Det() float64 {
 		m.Cofactor(0, 3)*m[12]
 }
 
+func (m Mat4) HasInv() bool {
+	return m.Det() != 0
+}
+
+// TODO optimize this if we end up calling it a lot.
+func (m Mat4) Inv() Mat4 {
+	det := m.Det()
+	if det == 0.0 {
+		return Mat4{}
+	}
+
+	inv := Mat4{}
+	for row := 0; row < 4; row++ {
+		for col := 0; col < 4; col++ {
+			inv[row*4+col] = m.Cofactor(row, col) / det
+		}
+	}
+
+	return inv
+}
+
 // TOOD optimize this.
 func (m Mat4) SubMatrix(x, y int) Mat3 {
 	m3 := Mat3{}

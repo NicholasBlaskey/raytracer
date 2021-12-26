@@ -23,6 +23,8 @@ func transformSteps(ctx *godog.ScenarioContext) {
 		wordRegex, floatRegex, floatRegex, floatRegex), createTranslation)
 	ctx.Step(fmt.Sprintf(`^%s ← scaling\(%s, %s, %s\)$`,
 		wordRegex, floatRegex, floatRegex, floatRegex), createScale)
+	ctx.Step(fmt.Sprintf(`^%s ← rotation_(x|y|z)\(%s\)$`,
+		wordRegex, floatRegex), createRotatation)
 }
 
 func createTranslation(t string, x, y, z float64) {
@@ -41,4 +43,14 @@ func matrixMulVecOrPointEquals(m, p, pointOrVector string, x, y, z float64) erro
 		return isEqualTuple(actual, x, y, z, 1.0)
 	}
 	return isEqualTuple(actual, x, y, z, 0.0)
+}
+
+func createRotatation(t, xyz string, theta float64) {
+	if xyz == "x" {
+		matrices[t] = matrix.RotateX(theta)
+	} else if xyz == "y" {
+		matrices[t] = matrix.RotateY(theta)
+	} else {
+		matrices[t] = matrix.RotateZ(theta)
+	}
 }

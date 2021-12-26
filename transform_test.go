@@ -25,6 +25,9 @@ func transformSteps(ctx *godog.ScenarioContext) {
 		wordRegex, floatRegex, floatRegex, floatRegex), createScale)
 	ctx.Step(fmt.Sprintf(`^%s ← rotation_(x|y|z)\(%s\)$`,
 		wordRegex, floatRegex), createRotatation)
+	ctx.Step(fmt.Sprintf(`^%s ← shearing\(%s, %s, %s, %s, %s, %s\)$`, wordRegex,
+		floatRegex, floatRegex, floatRegex, floatRegex, floatRegex, floatRegex),
+		createShear)
 }
 
 func createTranslation(t string, x, y, z float64) {
@@ -53,4 +56,8 @@ func createRotatation(t, xyz string, theta float64) {
 	} else {
 		matrices[t] = matrix.RotateZ(theta)
 	}
+}
+
+func createShear(t string, xy, xz, yx, yz, zx, zy float64) {
+	matrices[t] = matrix.Shear(xy, xz, yx, yz, zx, zy)
 }

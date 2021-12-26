@@ -48,3 +48,12 @@ func RotateZ(theta float64) Mat4 {
 		0.0, 0.0, 0.0, 1.0,
 	}
 }
+
+func Shear(xy, xz, yx, yz, zx, zy float64) Mat4 {
+	return Mat4{
+		1.0, yx, zx, 0.0,
+		xy, 1.0, zy, 0.0,
+		xz, yz, 1.0, 0.0,
+		0.0, 0.0, 0.0, 1.0,
+	}
+}

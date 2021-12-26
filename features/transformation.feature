@@ -71,3 +71,33 @@ Scenario: Rotating a point around the z axis
     And full_quarter ← rotation_z(1.57079632679)
   Then half_quarter * p = point(-0.70710678118, 0.70710678118, 0.0)
     And full_quarter * p = point(-1.0, 0.0, 0.0)
+
+Scenario: A shearing transformation moves x in proportion to y
+  Given transform ← shearing(1.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+    And p ← point(2.0, 3.0, 4.0)
+  Then transform * p = point(5.0, 3.0, 4.0)
+
+Scenario: A shearing transformation moves x in proportion to z
+  Given transform ← shearing(0.0, 1.0, 0.0, 0.0, 0.0, 0.0)
+    And p ← point(2.0, 3.0, 4.0)
+  Then transform * p = point(6.0, 3.0, 4.0)
+
+Scenario: A shearing transformation moves y in proportion to x
+  Given transform ← shearing(0.0, 0.0, 1.0, 0.0, 0.0, 0.0)
+    And p ← point(2.0, 3.0, 4.0)
+  Then transform * p = point(2.0, 5.0, 4.0)
+
+Scenario: A shearing transformation moves y in proportion to z
+  Given transform ← shearing(0.0, 0.0, 0.0, 1.0, 0.0, 0.0)
+    And p ← point(2.0, 3.0, 4.0)
+  Then transform * p = point(2.0, 7.0, 4.0)
+
+Scenario: A shearing transformation moves z in proportion to x
+  Given transform ← shearing(0.0, 0.0, 0.0, 0.0, 1.0, 0.0)
+    And p ← point(2.0, 3.0, 4.0)
+  Then transform * p = point(2.0, 3.0, 6.0)
+
+Scenario: A shearing transformation moves z in proportion to y
+  Given transform ← shearing(0.0, 0.0, 0.0, 0.0, 0.0, 1.0)
+    And p ← point(2.0, 3.0, 4.0)
+  Then transform * p = point(2.0, 3.0, 7.0)

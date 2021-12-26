@@ -34,6 +34,8 @@ func tuplesSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^%s (is|is not) a (point|vector)$`, wordRegex), tupleIsA)
 	ctx.Step(fmt.Sprintf(`^%s = tuple\(%s, %s, %s, %s\)$`,
 		wordRegex, floatRegex, floatRegex, floatRegex, floatRegex), isEqualTuple)
+	ctx.Step(fmt.Sprintf(`^%s = point\(%s, %s, %s\)$`,
+		wordRegex, floatRegex, floatRegex, floatRegex), isEqualPoint)
 
 	// Operations.
 	ctx.Step(fmt.Sprintf(`^%s \+ %s = tuple\(%s, %s, %s, %s\)$`,
@@ -106,6 +108,10 @@ func isEqualTuple(tuple string, x, y, z, w float64) error {
 			tuples[tuple][0], tuples[tuple][1], tuples[tuple][2], tuples[tuple][3])
 	}
 	return nil
+}
+
+func isEqualPoint(tuple string, x, y, z float64) error {
+	return isEqualTuple(tuple, x, y, z, 1.0)
 }
 
 func isEqualNegate(tuple string, x, y, z, w float64) error {

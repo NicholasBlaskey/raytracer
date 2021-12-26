@@ -137,10 +137,15 @@ func matrixNotEquals(m0, m1 string) error {
 	return nil
 }
 
-// Only works for mat4s
 func matrixMul(res, m0, m1 string) {
-	matrices[res] = matrices[m0].(matrix.Mat4).Mul4(
-		matrices[m1].(matrix.Mat4))
+	// Matrix x Matrix case.
+	if m, ok := matrices[m1]; ok {
+		matrices[res] = matrices[m0].(matrix.Mat4).Mul4(m.(matrix.Mat4))
+		return
+	}
+
+	// Matrix x tuple case.
+	tuples[res] = matrices[m0].(matrix.Mat4).Mul4x1(tuples[m1])
 }
 
 func matrixMulEquals(m0, m1 string, data *godog.Table) error {

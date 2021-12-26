@@ -16,8 +16,10 @@ func transformBefore(ctx context.Context, sc *godog.Scenario) (context.Context, 
 }
 
 func transformSteps(ctx *godog.ScenarioContext) {
-	ctx.Step(fmt.Sprintf(`%s \* %s = (point|vector)\(%s, %s, %s\)`, wordRegex, wordRegex,
+	ctx.Step(fmt.Sprintf(`%s \* %s = (point|vector)\(%s, %s, %s\)$`, wordRegex, wordRegex,
 		floatRegex, floatRegex, floatRegex), matrixMulVecOrPointEquals)
+	ctx.Step(fmt.Sprintf(`%s ← %s \* %s \* %s$`, wordRegex, wordRegex,
+		wordRegex, wordRegex), matrixMulMatrixMulMatrix)
 
 	ctx.Step(fmt.Sprintf(`^%s ← translation\(%s, %s, %s\)$`,
 		wordRegex, floatRegex, floatRegex, floatRegex), createTranslation)
@@ -60,4 +62,10 @@ func createRotatation(t, xyz string, theta float64) {
 
 func createShear(t string, xy, xz, yx, yz, zx, zy float64) {
 	matrices[t] = matrix.Shear(xy, xz, yx, yz, zx, zy)
+}
+
+func matrixMulMatrixMulMatrix(res string, t0, t1, t2 string) {
+	matrices[res] = matrices[t0].(matrix.Mat4).Mul4(
+		matrices[t1].(matrix.Mat4)).Mul4(
+		matrices[t2].(matrix.Mat4))
 }

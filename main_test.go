@@ -41,6 +41,7 @@ func initializeScenario(ctx *godog.ScenarioContext) {
 		canvasBefore(ctx, sc)
 		matrixBefore(ctx, sc)
 		transformBefore(ctx, sc)
+		rayBefore(ctx, sc)
 
 		return ctx, nil
 	})
@@ -49,4 +50,5 @@ func initializeScenario(ctx *godog.ScenarioContext) {
 	canvasSteps(ctx)
 	matrixSteps(ctx)
 	transformSteps(ctx)
+	raySteps(ctx)
 }

@@ -43,6 +43,7 @@ func initializeScenario(ctx *godog.ScenarioContext) {
 		transformBefore(ctx, sc)
 		rayBefore(ctx, sc)
 		sphereBefore(ctx, sc)
+		intersectionBefore(ctx, sc)
 
 		return ctx, nil
 	})
@@ -53,4 +54,5 @@ func initializeScenario(ctx *godog.ScenarioContext) {
 	transformSteps(ctx)
 	raySteps(ctx)
 	sphereSteps(ctx)
+	intersectionSteps(ctx)
 }

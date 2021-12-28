@@ -29,7 +29,7 @@ func tuplesSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^%s ← normalize\(%s\)$`, wordRegex, wordRegex), createVectorNormalize)
 
 	// Check tuples are.
-	ctx.Step(fmt.Sprintf(`^%s\.%s = %s$`, wordRegex, wordRegex, floatRegex),
+	ctx.Step(fmt.Sprintf(`^%s\.(x|y|z|w|red|green|blue) = %s$`, wordRegex, floatRegex),
 		tupleValueEqual)
 	ctx.Step(fmt.Sprintf(`^%s (is|is not) a (point|vector)$`, wordRegex), tupleIsA)
 	ctx.Step(fmt.Sprintf(`^%s = tuple\(%s, %s, %s, %s\)$`,

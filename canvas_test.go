@@ -24,8 +24,8 @@ func canvasSteps(ctx *godog.ScenarioContext) {
 	// Canvas
 	ctx.Step(fmt.Sprintf(`^%s ← canvas\(%s, %s\)$`,
 		wordRegex, intRegex, intRegex), createCanvas)
-	ctx.Step(fmt.Sprintf(`^%s\.%s = %s$`,
-		wordRegex, wordRegex, intRegex), checkCanvasWidthOrHeight)
+	ctx.Step(fmt.Sprintf(`^%s\.(width|height) = %s$`,
+		wordRegex, intRegex), checkCanvasWidthOrHeight)
 	ctx.Step(fmt.Sprintf(`^every pixel of %s is color\(%s, %s, %s\)$`,
 		wordRegex, floatRegex, floatRegex, floatRegex), canvasEveryPixelIs)
 	ctx.Step(fmt.Sprintf(`^write_pixel\(%s, %s, %s, %s\)$`,

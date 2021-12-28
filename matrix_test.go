@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/nicholasblaskey/raytracer/matrix"
-	//"github.com/nicholasblaskey/raytracer/tuple"
 
 	"github.com/cucumber/godog"
 )
@@ -110,6 +109,10 @@ func matrixEqual4(mat string, data *godog.Table) error {
 }
 
 func matrixEquals(m0, m1 string) error {
+	if _, ok := intersectionObjects[m1]; ok { // Case of intersection comparision.
+		return intersectionEquals(m0, m1)
+	}
+
 	areEqual := false
 	switch mat0 := matrices[m0].(type) {
 	case matrix.Mat4:
@@ -118,6 +121,8 @@ func matrixEquals(m0, m1 string) error {
 		areEqual = mat0.Equals(matrices[m1].(matrix.Mat3))
 	case matrix.Mat2:
 		areEqual = mat0.Equals(matrices[m1].(matrix.Mat2))
+	default:
+		panic("Matrix " + m0 + " not found")
 	}
 
 	if !areEqual {

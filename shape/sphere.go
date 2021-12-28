@@ -3,6 +3,7 @@ package shape
 import (
 	"math"
 
+	"github.com/nicholasblaskey/raytracer/intersection"
 	"github.com/nicholasblaskey/raytracer/ray"
 	"github.com/nicholasblaskey/raytracer/tuple"
 )
@@ -14,7 +15,7 @@ func NewSphere() *Sphere {
 	return &Sphere{}
 }
 
-func (s *Sphere) Intersections(r ray.Ray) []float64 {
+func (s *Sphere) Intersections(r ray.Ray) []*intersection.Intersection {
 	sphereToRay := r.Origin.Sub(tuple.Point(0.0, 0.0, 0.0))
 
 	a := r.Direction.Dot(r.Direction)
@@ -30,5 +31,7 @@ func (s *Sphere) Intersections(r ray.Ray) []float64 {
 	t0 := (-b - math.Sqrt(discriminant)) / (2.0 * a)
 	t1 := (-b + math.Sqrt(discriminant)) / (2.0 * a)
 
-	return []float64{t0, t1}
+	return []*intersection.Intersection{
+		&intersection.Intersection{Obj: s, T: t0},
+		&intersection.Intersection{Obj: s, T: t1}}
 }

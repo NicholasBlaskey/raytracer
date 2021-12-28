@@ -5,17 +5,17 @@ import (
 	"fmt"
 
 	//"github.com/nicholasblaskey/raytracer/ray"
-	"github.com/nicholasblaskey/raytracer/shape"
-
 	"github.com/cucumber/godog"
+	"github.com/nicholasblaskey/raytracer/intersection"
+	"github.com/nicholasblaskey/raytracer/shape"
 )
 
 var spheres map[string]*shape.Sphere
-var intersections map[string][]float64
+var intersections map[string][]*intersection.Intersection
 
 func sphereBefore(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
 	spheres = make(map[string]*shape.Sphere)
-	intersections = make(map[string][]float64)
+	intersections = make(map[string][]*intersection.Intersection)
 	return ctx, nil
 }
 
@@ -26,8 +26,11 @@ func sphereSteps(ctx *godog.ScenarioContext) {
 
 	ctx.Step(fmt.Sprintf(`^%s.count = %s`, wordRegex, intRegex),
 		intersectCountEqual)
-	ctx.Step(fmt.Sprintf(`^%s\[%s\] = %s`, wordRegex, intRegex, floatRegex),
+	ctx.Step(fmt.Sprintf(`^%s\[%s\](?:.t|) = %s`, wordRegex, intRegex, floatRegex),
 		intersectValueEqual)
+	ctx.Step(fmt.Sprintf(`^%s\[%s\].object = %s`, wordRegex, intRegex, wordRegex),
+		intersectObjectEqual)
+
 }
 
 func createSphere(s string) {
@@ -52,9 +55,22 @@ func intersectValueEqual(i string, index int, expected float64) error {
 			index, len(intersections[i]))
 	}
 
-	if intersections[i][index] != expected {
+	if intersections[i][index].T != expected {
 		return fmt.Errorf("%s[%d] expected %f got %f", i, index,
-			expected, intersections[i])
+			expected, intersections[i][index].T)
+	}
+	return nil
+}
+
+func intersectObjectEqual(i string, index int, expected string) error {
+	if index >= len(intersections[i]) {
+		return fmt.Errorf("Tried to get out of bounds index %d of intersection %v",
+			index, len(intersections[i]))
+	}
+
+	if intersections[i][index].Obj != spheres[expected] {
+		return fmt.Errorf("%s[%d] expected %v got %v", i, index,
+			spheres[expected], intersections[i][index].Obj)
 	}
 	return nil
 }

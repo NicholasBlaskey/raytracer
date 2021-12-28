@@ -37,3 +37,11 @@ Scenario: A sphere is behind a ray
   Then xs.count = 2
     And xs[0] = -6.0
     And xs[1] = -4.0
+
+Scenario: Intersect sets the object on the intersection
+  Given r ← ray(point(0.0, 0.0, -5.0), vector(0.0, 0.0, 1.0))
+    And s ← sphere()
+  When xs ← intersect(s, r)
+  Then xs.count = 2
+    And xs[0].object = s
+    And xs[1].object = s

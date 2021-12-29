@@ -1,15 +1,17 @@
 package main
 
 import (
-	"fmt"
-	"math"
+	//"fmt"
+	//"math"
 
 	"github.com/nicholasblaskey/raytracer/canvas"
-	"github.com/nicholasblaskey/raytracer/matrix"
+	"github.com/nicholasblaskey/raytracer/ray"
+	"github.com/nicholasblaskey/raytracer/shape"
 	"github.com/nicholasblaskey/raytracer/tuple"
 )
 
 /*
+// Draw a projectile.
 func main() {
 	cur := tuple.Point(0.0, 1.0, 0.0)
 	velocity := tuple.Vector(1.0, 1.8, 0.0).Normalize().Mul(11.25)
@@ -34,6 +36,8 @@ func main() {
 }
 */
 
+/*
+// Draw a clock.
 func main() {
 	w, h := 100.0, 100.0
 	c := canvas.New(int(w), int(h))
@@ -47,6 +51,39 @@ func main() {
 
 		fmt.Println(cur, x, y)
 		cur = rot.Mul4x1(cur)
+	}
+
+	if err := c.Save("test.ppm"); err != nil {
+		panic(err)
+	}
+}
+*/
+
+// Draw sphere (no shading)
+func main() {
+	w, h := 500, 500
+	c := canvas.New(w, h)
+
+	wallZ := 10.0
+	rayOrigin := tuple.Point(0.0, 0.0, -5.0)
+	wallSize := 7.0
+	pixelSize := wallSize / float64(w)
+	sphere := shape.NewSphere()
+
+	for y := 0; y < h; y++ {
+		wallY := (wallSize / 2.0) - pixelSize*float64(y)
+		for x := 0; x < w; x++ {
+			wallX := (-wallSize / 2.0) + pixelSize*float64(x)
+
+			pos := tuple.Point(wallX, wallY, wallZ)
+			r := ray.New(rayOrigin, pos.Sub(rayOrigin).Normalize())
+			xs := sphere.Intersections(r)
+
+			if xs != nil {
+				c.WritePixel(tuple.Color(0.0, 0.5, 0.5), x, y)
+			}
+
+		}
 	}
 
 	if err := c.Save("test.ppm"); err != nil {

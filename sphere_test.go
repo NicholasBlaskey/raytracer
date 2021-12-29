@@ -36,6 +36,8 @@ func sphereSteps(ctx *godog.ScenarioContext) {
 		sphereSetTransform)
 	ctx.Step(fmt.Sprintf(`^%s.transform = %s$`, wordRegex, wordRegex),
 		sphereTransformEquals)
+	ctx.Step(fmt.Sprintf(`^set_transform\(%s, (scaling|translation)\(%s, %s, %s\)\)$`,
+		wordRegex, floatRegex, floatRegex, floatRegex), sphereSetTransformLiteral)
 }
 
 func createSphere(s string) {
@@ -82,6 +84,16 @@ func intersectObjectEqual(i string, index int, expected string) error {
 
 func sphereSetTransform(s, t string) {
 	spheres[s].Transform = matrices[t].(matrix.Mat4)
+}
+
+func sphereSetTransformLiteral(s, translationType string, x, y, z float64) {
+	switch translationType {
+	case "translation":
+		spheres[s].Transform = matrix.Translate(x, y, z)
+	case "scaling":
+		spheres[s].Transform = matrix.Scale(x, y, z)
+	}
+
 }
 
 func sphereTransformEquals(s, expected string) error {

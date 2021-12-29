@@ -55,3 +55,19 @@ Scenario: Changing a sphere's transformation
     And t ← translation(2.0, 3.0, 4.0)
   When set_transform(s, t)
   Then s.transform = t
+
+Scenario: Intersecting a scaled sphere with a ray
+  Given r ← ray(point(0.0, 0.0, -5.0), vector(0.0, 0.0, 1.0))
+    And s ← sphere()
+  When set_transform(s, scaling(2.0, 2.0, 2.0))
+    And xs ← intersect(s, r)
+  Then xs.count = 2
+    And xs[0].t = 3.0
+    And xs[1].t = 7.0
+
+Scenario: Intersecting a translated sphere with a ray
+  Given r ← ray(point(0.0, 0.0, -5.0), vector(0.0, 0.0, 1.0))
+    And s ← sphere()
+  When set_transform(s, translation(5.0, 0.0, 0.0))
+    And xs ← intersect(s, r)
+  Then xs.count = 0

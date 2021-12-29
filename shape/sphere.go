@@ -17,7 +17,9 @@ func NewSphere() *Sphere {
 	return &Sphere{matrix.Ident4()}
 }
 
-func (s *Sphere) Intersections(r ray.Ray) []*intersection.Intersection {
+func (s *Sphere) Intersections(origR ray.Ray) []*intersection.Intersection {
+	r := origR.Transform(s.Transform.Inv())
+
 	sphereToRay := r.Origin.Sub(tuple.Point(0.0, 0.0, 0.0))
 
 	a := r.Direction.Dot(r.Direction)

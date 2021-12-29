@@ -4,15 +4,17 @@ import (
 	"math"
 
 	"github.com/nicholasblaskey/raytracer/intersection"
+	"github.com/nicholasblaskey/raytracer/matrix"
 	"github.com/nicholasblaskey/raytracer/ray"
 	"github.com/nicholasblaskey/raytracer/tuple"
 )
 
 type Sphere struct {
+	Transform matrix.Mat4
 }
 
 func NewSphere() *Sphere {
-	return &Sphere{}
+	return &Sphere{matrix.Ident4()}
 }
 
 func (s *Sphere) Intersections(r ray.Ray) []*intersection.Intersection {

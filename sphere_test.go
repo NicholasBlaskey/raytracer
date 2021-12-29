@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	//"github.com/nicholasblaskey/raytracer/ray"
-	"github.com/cucumber/godog"
 	"github.com/nicholasblaskey/raytracer/intersection"
+	"github.com/nicholasblaskey/raytracer/matrix"
 	"github.com/nicholasblaskey/raytracer/shape"
+
+	"github.com/cucumber/godog"
 )
 
 var spheres map[string]*shape.Sphere
@@ -31,6 +32,10 @@ func sphereSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^%s\[%s\].object = %s`, wordRegex, intRegex, wordRegex),
 		intersectObjectEqual)
 
+	ctx.Step(fmt.Sprintf(`^set_transform\(%s, %s\)$`, wordRegex, wordRegex),
+		sphereSetTransform)
+	ctx.Step(fmt.Sprintf(`^%s.transform = %s$`, wordRegex, wordRegex),
+		sphereTransformEquals)
 }
 
 func createSphere(s string) {
@@ -73,4 +78,15 @@ func intersectObjectEqual(i string, index int, expected string) error {
 			spheres[expected], intersections[i][index].Obj)
 	}
 	return nil
+}
+
+func sphereSetTransform(s, t string) {
+	spheres[s].Transform = matrices[t].(matrix.Mat4)
+}
+
+func sphereTransformEquals(s, expected string) error {
+	actual := fmt.Sprintf("%s.transform", s)
+	matrices[actual] = spheres[s].Transform
+
+	return matrixEquals(actual, expected)
 }

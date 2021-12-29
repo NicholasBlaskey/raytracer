@@ -45,3 +45,13 @@ Scenario: Intersect sets the object on the intersection
   Then xs.count = 2
     And xs[0].object = s
     And xs[1].object = s
+
+Scenario: A sphere's default transformation
+  Given s ← sphere()
+  Then s.transform = identity_matrix
+
+Scenario: Changing a sphere's transformation
+  Given s ← sphere()
+    And t ← translation(2.0, 3.0, 4.0)
+  When set_transform(s, t)
+  Then s.transform = t

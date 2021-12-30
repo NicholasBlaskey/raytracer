@@ -5,6 +5,7 @@ import (
 	//"math"
 
 	"github.com/nicholasblaskey/raytracer/canvas"
+	"github.com/nicholasblaskey/raytracer/matrix"
 	"github.com/nicholasblaskey/raytracer/ray"
 	"github.com/nicholasblaskey/raytracer/shape"
 	"github.com/nicholasblaskey/raytracer/tuple"
@@ -69,6 +70,8 @@ func main() {
 	wallSize := 7.0
 	pixelSize := wallSize / float64(w)
 	sphere := shape.NewSphere()
+	sphere.Transform = matrix.Translate(0.1, 0.2, 0.3).Mul4(
+		matrix.Scale(0.1, 0.8, 0.3))
 
 	for y := 0; y < h; y++ {
 		wallY := (wallSize / 2.0) - pixelSize*float64(y)

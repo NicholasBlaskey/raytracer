@@ -34,8 +34,8 @@ func tuplesSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^%s (is|is not) a (point|vector)$`, wordRegex), tupleIsA)
 	ctx.Step(fmt.Sprintf(`^%s = tuple\(%s, %s, %s, %s\)$`,
 		wordRegex, floatRegex, floatRegex, floatRegex, floatRegex), isEqualTuple)
-	ctx.Step(fmt.Sprintf(`^%s = point\(%s, %s, %s\)$`,
-		wordRegex, floatRegex, floatRegex, floatRegex), isEqualPoint)
+	ctx.Step(fmt.Sprintf(`^%s = (point|vector)\(%s, %s, %s\)$`,
+		wordRegex, floatRegex, floatRegex, floatRegex), isEqualPointOrVector)
 
 	// Operations.
 	ctx.Step(fmt.Sprintf(`^%s \+ %s = tuple\(%s, %s, %s, %s\)$`,
@@ -65,6 +65,8 @@ func tuplesSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^magnitude\(%s\) = %s$`, wordRegex, floatRegex), isEqualMag)
 	ctx.Step(fmt.Sprintf(`^normalize\(%s\) = vector\(%s, %s, %s\)$`,
 		wordRegex, floatRegex, floatRegex, floatRegex), isEqualNorm)
+	ctx.Step(fmt.Sprintf(`^%s = normalize\(%s\)$`, wordRegex, wordRegex),
+		isEqualToNormalize)
 
 	ctx.Step(fmt.Sprintf(`^dot\(%s, %s\) = %s$`,
 		wordRegex, wordRegex, floatRegex),
@@ -110,8 +112,11 @@ func isEqualTuple(tuple string, x, y, z, w float64) error {
 	return nil
 }
 
-func isEqualPoint(tuple string, x, y, z float64) error {
-	return isEqualTuple(tuple, x, y, z, 1.0)
+func isEqualPointOrVector(tuple, vecOrPoint string, x, y, z float64) error {
+	if vecOrPoint == "point" {
+		return isEqualTuple(tuple, x, y, z, 1.0)
+	}
+	return isEqualTuple(tuple, x, y, z, 0.0)
 }
 
 func isEqualNegate(tuple string, x, y, z, w float64) error {
@@ -204,6 +209,11 @@ func isEqualNorm(tuple string, x, y, z float64) error {
 	tuples[newTuple] = tuples[tuple].Normalize()
 
 	return isEqualTuple(newTuple, x, y, z, 0.0)
+}
+
+func isEqualToNormalize(t0, t1 string) error {
+	normed := tuples[t1].Normalize()
+	return isEqualNorm(t0, normed[0], normed[1], normed[2])
 }
 
 func tupleIsA(tuple string, isOrNotIs string, expected string) error {

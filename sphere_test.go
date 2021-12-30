@@ -7,6 +7,7 @@ import (
 	"github.com/nicholasblaskey/raytracer/intersection"
 	"github.com/nicholasblaskey/raytracer/matrix"
 	"github.com/nicholasblaskey/raytracer/shape"
+	"github.com/nicholasblaskey/raytracer/tuple"
 
 	"github.com/cucumber/godog"
 )
@@ -38,6 +39,9 @@ func sphereSteps(ctx *godog.ScenarioContext) {
 		sphereTransformEquals)
 	ctx.Step(fmt.Sprintf(`^set_transform\(%s, (scaling|translation)\(%s, %s, %s\)\)$`,
 		wordRegex, floatRegex, floatRegex, floatRegex), sphereSetTransformLiteral)
+
+	ctx.Step(fmt.Sprintf(`^%s ← normal_at\(%s, point\(%s, %s, %s\)\)$`,
+		wordRegex, wordRegex, floatRegex, floatRegex, floatRegex), sphereNormalAt)
 }
 
 func createSphere(s string) {
@@ -101,4 +105,8 @@ func sphereTransformEquals(s, expected string) error {
 	matrices[actual] = spheres[s].Transform
 
 	return matrixEquals(actual, expected)
+}
+
+func sphereNormalAt(n, s string, x, y, z float64) {
+	tuples[n] = spheres[s].NormalAt(tuple.Point(x, y, z))
 }

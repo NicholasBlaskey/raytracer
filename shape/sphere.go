@@ -39,3 +39,7 @@ func (s *Sphere) Intersections(origR ray.Ray) []*intersection.Intersection {
 		&intersection.Intersection{Obj: s, T: t0},
 		&intersection.Intersection{Obj: s, T: t1}}
 }
+
+func (s *Sphere) NormalAt(p tuple.Tuple) tuple.Tuple {
+	return p.Sub(tuple.Point(0.0, 0.0, 0.0)).Normalize()
+}

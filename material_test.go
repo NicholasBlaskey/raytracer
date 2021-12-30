@@ -9,21 +9,28 @@ import (
 	"github.com/cucumber/godog"
 )
 
-var materials map[string]material.Material
+var materials map[string]*material.Material
 
 func materialBefore(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
-	materials = make(map[string]material.Material)
+	materials = make(map[string]*material.Material)
 	return ctx, nil
 }
 
 func materialSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^%s ← material\(\)$`,
 		wordRegex), createMaterial)
+	ctx.Step(fmt.Sprintf(`^%s\.(ambient|diffuse|specular|shininess) ← %s`,
+		wordRegex, wordRegex), assignMaterialComponenent)
 
 	ctx.Step(fmt.Sprintf(`^%s\.(ambient|diffuse|specular|shininess) = %s$`,
 		wordRegex, floatRegex), materialComponentEqual)
 	ctx.Step(fmt.Sprintf(`^%s\.color = color\(%s, %s, %s\)$`,
 		wordRegex, floatRegex, floatRegex, floatRegex), materialColorEqual)
+
+	ctx.Step(fmt.Sprintf(`^%s ← lighting\(%s, %s, %s, %s, %s\)$`,
+		wordRegex, wordRegex, wordRegex, wordRegex, wordRegex, wordRegex),
+		materialLighting)
+
 }
 
 func createMaterial(m string) {
@@ -51,9 +58,32 @@ func materialComponentEqual(m, component string, expected float64) error {
 	return nil
 }
 
+func assignMaterialComponenent(m, component string, v float64) {
+	switch component {
+	case "ambient":
+		materials[m].Ambient = v
+	case "diffuse":
+		materials[m].Diffuse = v
+	case "specular":
+		materials[m].Specular = v
+	case "shininess":
+		materials[m].Shininess = v
+	default:
+		panic("SHOULDNT happen!")
+	}
+}
+
 func materialColorEqual(m string, r, g, b float64) error {
 	actual := fmt.Sprintf("%s.color", m)
 	tuples[actual] = materials[m].Color
 
 	return isEqualTuple(actual, r, g, b, 0.0)
+}
+
+func materialLighting(m, light, pos, eyev, normalv string) {
+	tuples[m] = materials[m].Lighting(
+		lights[light],
+		tuples[pos],
+		tuples[eyev],
+		tuples[normalv])
 }

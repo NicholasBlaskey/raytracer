@@ -109,3 +109,18 @@ Scenario: Computing the normal on a transformed sphere
     And set_transform(s, m)
   When n ← normal_at(s, point(0.0, 0.70710678118, -0.70710678118))
   Then n = vector(0.0, 0.97014, -0.24254)
+
+Scenario: A sphere has a default material
+  Given s ← sphere()
+  When m ← s.material
+  Then m = material()
+
+Scenario: A sphere may be assigned a material
+  Given s ← sphere()
+    And m ← material()
+    And m.ambient ← 1.0
+  When s.material ← m
+  Then s.material = m
+    And z ← s.material
+    And z.ambient = 1.0
+  

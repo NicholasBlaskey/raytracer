@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/nicholasblaskey/raytracer/intersection"
+	"github.com/nicholasblaskey/raytracer/material"
 	"github.com/nicholasblaskey/raytracer/matrix"
 	"github.com/nicholasblaskey/raytracer/shape"
 	"github.com/nicholasblaskey/raytracer/tuple"
@@ -43,6 +44,15 @@ func sphereSteps(ctx *godog.ScenarioContext) {
 
 	ctx.Step(fmt.Sprintf(`^%s ← normal_at\(%s, point\(%s, %s, %s\)\)$`,
 		wordRegex, wordRegex, floatRegex, floatRegex, floatRegex), sphereNormalAt)
+
+	ctx.Step(fmt.Sprintf(`^%s ← %s.material$`, wordRegex, wordRegex),
+		getSphereMaterial)
+	ctx.Step(fmt.Sprintf(`^%s = material\(\)$`, wordRegex),
+		materialIsDefault)
+	ctx.Step(fmt.Sprintf(`^%s.material ← %s$`, wordRegex, wordRegex),
+		assignSphereMaterial)
+	ctx.Step(fmt.Sprintf(`^%s.material = %s$`, wordRegex, wordRegex),
+		sphereMaterialEqual)
 }
 
 func createSphere(s string) {
@@ -110,4 +120,28 @@ func sphereTransformEquals(s, expected string) error {
 
 func sphereNormalAt(n, s string, x, y, z float64) {
 	tuples[n] = spheres[s].NormalAt(tuple.Point(x, y, z))
+}
+
+func getSphereMaterial(m, s string) {
+	materials[m] = spheres[s].Material
+}
+
+func materialIsDefault(m string) error {
+	isEqual := *materials[m] == *material.New()
+	if !isEqual {
+		return fmt.Errorf("%s is not equal to the default material", m)
+	}
+	return nil
+}
+
+func assignSphereMaterial(s, m string) {
+	spheres[s].Material = materials[m]
+}
+
+func sphereMaterialEqual(s, m string) error {
+	if spheres[s].Material != materials[m] {
+		return fmt.Errorf("%s.material expected %v got %v", s,
+			spheres[s].Material, materials[m])
+	}
+	return nil
 }

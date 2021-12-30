@@ -5,6 +5,8 @@ import (
 	//"math"
 
 	"github.com/nicholasblaskey/raytracer/canvas"
+	"github.com/nicholasblaskey/raytracer/light"
+	"github.com/nicholasblaskey/raytracer/material"
 	"github.com/nicholasblaskey/raytracer/matrix"
 	"github.com/nicholasblaskey/raytracer/ray"
 	"github.com/nicholasblaskey/raytracer/shape"
@@ -60,6 +62,7 @@ func main() {
 }
 */
 
+/*
 // Draw sphere (no shading)
 func main() {
 	w, h := 500, 500
@@ -84,6 +87,59 @@ func main() {
 
 			if xs != nil {
 				c.WritePixel(tuple.Color(0.0, 0.5, 0.5), x, y)
+			}
+
+		}
+	}
+
+	if err := c.Save("test.ppm"); err != nil {
+		panic(err)
+	}
+}
+*/
+
+// Draw sphere (shading)
+func main() {
+	m := material.New()
+	m.Color = tuple.Color(1.0, 0.2, 1.0)
+	m.Diffuse = 0.1
+	m.Specular = 1.0
+	m.Shininess = 0.5
+
+	w, h := 500, 500
+	c := canvas.New(w, h)
+
+	wallZ := 10.0
+	rayOrigin := tuple.Point(0.0, 0.0, -5.0)
+	wallSize := 7.0
+	pixelSize := wallSize / float64(w)
+	sphere := shape.NewSphere()
+	sphere.Material = m
+
+	sphere.Transform = matrix.Ident4()
+	//sphere.Transform = matrix.Translate(0.1, 0.2, 0.3).Mul4(
+	//	matrix.Scale(0.5, 0.3, 0.5))
+
+	lightPos := tuple.Point(-10.0, 10.0, -10.0)
+	lightCol := tuple.Color(1.0, 1.0, 1.0)
+	light := light.NewPointLight(lightPos, lightCol)
+
+	for y := 0; y < h; y++ {
+		wallY := (wallSize / 2.0) - pixelSize*float64(y)
+		for x := 0; x < w; x++ {
+			wallX := (-wallSize / 2.0) + pixelSize*float64(x)
+
+			pos := tuple.Point(wallX, wallY, wallZ)
+			r := ray.New(rayOrigin, pos.Sub(rayOrigin).Normalize())
+			xs := sphere.Intersections(r)
+
+			if xs != nil {
+				point := r.PositionAt(xs[0].T)
+				normal := sphere.NormalAt(point)
+				eye := r.Direction.Mul(-1)
+				col := sphere.Material.Lighting(light, point, eye, normal)
+
+				c.WritePixel(col, x, y)
 			}
 
 		}

@@ -69,3 +69,7 @@ func (t Tuple) Cross(x Tuple) Tuple {
 		0.0,
 	}
 }
+
+func (t Tuple) Reflect(n Tuple) Tuple {
+	return t.Sub(n.Mul(2 * t.Dot(n)))
+}

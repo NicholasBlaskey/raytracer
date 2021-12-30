@@ -28,7 +28,7 @@ func TestFeatures(t *testing.T) {
 			Paths:    []string{"features"},
 			TestingT: t, // Testing instance that will run subtests.
 			// Stops on the first failure
-			StopOnFailure: true,
+			//StopOnFailure: true,
 		},
 	}
 

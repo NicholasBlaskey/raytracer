@@ -40,6 +40,14 @@ func (s *Sphere) Intersections(origR ray.Ray) []*intersection.Intersection {
 		&intersection.Intersection{Obj: s, T: t1}}
 }
 
-func (s *Sphere) NormalAt(p tuple.Tuple) tuple.Tuple {
-	return p.Sub(tuple.Point(0.0, 0.0, 0.0)).Normalize()
+func (s *Sphere) NormalAt(worldPoint tuple.Tuple) tuple.Tuple {
+	invT := s.Transform.Inv()
+
+	objectPoint := invT.Mul4x1(worldPoint)
+	objectNormal := objectPoint.Sub(tuple.Point(0.0, 0.0, 0.0))
+
+	worldNormal := invT.T().Mul4x1(objectNormal)
+	worldNormal[3] = 0.0
+
+	return worldNormal.Normalize()
 }

@@ -136,3 +136,16 @@ Scenario: Multiplying colors
   Given c1 ← color(1.0, 0.2, 0.4)
     And c2 ← color(0.9, 1.0, 0.1)
    Then c1 * c2 = color(0.9, 0.2, 0.04)
+
+
+Scenario: Reflecting a vector approaching at 45°
+  Given v ← vector(1.0, -1.0, 0.0)
+    And n ← vector(0.0, 1.0, 0.0)
+  When r ← reflect(v, n)
+  Then r = vector(1.0, 1.0, 0.0)
+
+Scenario: Reflecting a vector off a slanted surface
+  Given v ← vector(0.0, -1.0, 0.0)
+    And n ← vector(0.70710678118, 0.70710678118, 0.0)
+  When r ← reflect(v, n)
+  Then r = vector(1.0, 0.0, 0.0)

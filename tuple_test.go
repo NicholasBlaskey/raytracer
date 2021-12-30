@@ -77,6 +77,9 @@ func tuplesSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^%s \* %s = color\(%s, %s, %s\)$`,
 		wordRegex, wordRegex, floatRegex, floatRegex, floatRegex),
 		isEqualColorMul)
+
+	ctx.Step(fmt.Sprintf(`^%s ← reflect\(%s, %s\)$`,
+		wordRegex, wordRegex, wordRegex), reflectVector)
 }
 
 func createTuple(t string, x, y, z, w float64) {
@@ -248,4 +251,8 @@ func createVectorNormalize(newTuple string, t string) {
 
 func createPoint(t string, x, y, z float64) {
 	tuples[t] = tuple.Point(x, y, z)
+}
+
+func reflectVector(res, v, n string) {
+	tuples[res] = tuples[v].Reflect(tuples[n])
 }

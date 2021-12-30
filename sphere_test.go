@@ -35,6 +35,7 @@ func sphereSteps(ctx *godog.ScenarioContext) {
 
 	ctx.Step(fmt.Sprintf(`^set_transform\(%s, %s\)$`, wordRegex, wordRegex),
 		sphereSetTransform)
+
 	ctx.Step(fmt.Sprintf(`^%s.transform = %s$`, wordRegex, wordRegex),
 		sphereTransformEquals)
 	ctx.Step(fmt.Sprintf(`^set_transform\(%s, (scaling|translation)\(%s, %s, %s\)\)$`,

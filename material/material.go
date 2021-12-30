@@ -1,6 +1,8 @@
 package material
 
 import (
+	"math"
+
 	"github.com/nicholasblaskey/raytracer/light"
 	"github.com/nicholasblaskey/raytracer/tuple"
 )
@@ -23,6 +25,26 @@ func New() *Material {
 	}
 }
 
-func (m *Material) Lighting(light light.Point, pos, eyev, normalv tuple.Tuple) tuple.Tuple {
-	return pos
+func (m *Material) Lighting(light light.Point, point, eyev, normalv tuple.Tuple) tuple.Tuple {
+	effColor := m.Color.ColorMul(light.Intensity)
+
+	lightv := light.Position.Sub(point).Normalize()
+
+	ambient := effColor.Mul(m.Ambient)
+
+	lightDotNormal := lightv.Dot(normalv)
+	diffuse, specular := tuple.Color(0.0, 0.0, 0.0), tuple.Color(0.0, 0.0, 0.0)
+	if lightDotNormal >= 0.0 {
+		diffuse = effColor.Mul(m.Diffuse).Mul(lightDotNormal)
+
+		reflectv := lightv.Mul(-1).Reflect(normalv)
+		reflectDotEye := reflectv.Dot(eyev)
+
+		if reflectDotEye > 0.0 {
+			factor := math.Pow(reflectDotEye, m.Shininess)
+			specular = light.Intensity.Mul(m.Specular).Mul(factor)
+		}
+	}
+
+	return ambient.Add(diffuse).Add(specular)
 }

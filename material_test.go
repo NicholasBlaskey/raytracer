@@ -13,6 +13,8 @@ var materials map[string]*material.Material
 
 func materialBefore(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
 	materials = make(map[string]*material.Material)
+
+	materials["m"] = material.New() // TODO figure out how to get background properly working
 	return ctx, nil
 }
 
@@ -30,7 +32,6 @@ func materialSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^%s ← lighting\(%s, %s, %s, %s, %s\)$`,
 		wordRegex, wordRegex, wordRegex, wordRegex, wordRegex, wordRegex),
 		materialLighting)
-
 }
 
 func createMaterial(m string) {
@@ -80,8 +81,8 @@ func materialColorEqual(m string, r, g, b float64) error {
 	return isEqualTuple(actual, r, g, b, 0.0)
 }
 
-func materialLighting(m, light, pos, eyev, normalv string) {
-	tuples[m] = materials[m].Lighting(
+func materialLighting(res, m, light, pos, eyev, normalv string) {
+	tuples[res] = materials[m].Lighting(
 		lights[light],
 		tuples[pos],
 		tuples[eyev],

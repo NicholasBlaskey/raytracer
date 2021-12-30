@@ -18,3 +18,31 @@ Scenario: Lighting with the eye between the light and the surface
     And light ← point_light(point(0.0, 0.0, -10.0), color(1.0, 1.0, 1.0))
   When result ← lighting(m, light, position, eyev, normalv)
   Then result = color(1.9, 1.9, 1.9)
+
+Scenario: Lighting with the eye between light and surface, eye offset 45°
+  Given eyev ← vector(0.0, 0.707106781187, -0.707106781187)
+    And normalv ← vector(0.0, 0.0, -1.0)
+    And light ← point_light(point(0.0, 0.0, -10.0), color(1.0, 1.0, 1.0))
+  When result ← lighting(m, light, position, eyev, normalv)
+  Then result = color(1.0, 1.0, 1.0)
+
+Scenario: Lighting with eye opposite surface, light offset 45°
+  Given eyev ← vector(0.0, 0.0, -1.0)
+    And normalv ← vector(0.0, 0.0, -1.0)
+    And light ← point_light(point(0.0, 10.0, -10.0), color(1.0, 1.0, 1.0))
+  When result ← lighting(m, light, position, eyev, normalv)
+  Then result = color(0.7364, 0.7364, 0.7364)
+
+Scenario: Lighting with eye in the path of the reflection vector
+  Given eyev ← vector(0.0, -0.707106781187, -0.707106781187)
+    And normalv ← vector(0.0, 0.0, -1.0)
+    And light ← point_light(point(0.0, 10.0, -10.0), color(1.0, 1.0, 1.0))
+  When result ← lighting(m, light, position, eyev, normalv)
+  Then result = color(1.6364, 1.6364, 1.6364)
+
+Scenario: Lighting with the light behind the surface
+  Given eyev ← vector(0.0, 0.0, -1.0)
+    And normalv ← vector(0.0, 0.0, -1.0)
+    And light ← point_light(point(0.0, 0.0, 10.0), color(1.0, 1.0, 1.0))
+  When result ← lighting(m, light, position, eyev, normalv)
+  Then result = color(0.1, 0.1, 0.1)

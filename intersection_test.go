@@ -11,9 +11,11 @@ import (
 )
 
 var intersectionObjects map[string]*intersection.Intersection
+var computations map[string]*intersection.Computations
 
 func intersectionBefore(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
 	intersectionObjects = make(map[string]*intersection.Intersection)
+	computations = make(map[string]*intersection.Computations)
 	return ctx, nil
 }
 
@@ -37,6 +39,15 @@ func intersectionSteps(ctx *godog.ScenarioContext) {
 
 	ctx.Step(fmt.Sprintf(`^%s is nothing$`, wordRegex),
 		intersectionIsNothing)
+
+	ctx.Step(fmt.Sprintf(`^%s ← prepare_computations\(%s, %s\)$`,
+		wordRegex, wordRegex, wordRegex), intersectionsPrepareComputations)
+	ctx.Step(fmt.Sprintf(`^%s.t = %s.t$`,
+		wordRegex, wordRegex), computationsTimeEquals)
+	ctx.Step(fmt.Sprintf(`^%s.object = %s.object$`,
+		wordRegex, wordRegex), computationsObjectEquals)
+	ctx.Step(fmt.Sprintf(`^%s.(point|eyev|normalv) = (point|vector)\(%s, %s, %s\)$`,
+		wordRegex, floatRegex, floatRegex, floatRegex), computationsTupleEquals)
 }
 
 func intersectionCreate(i string, t float64, obj string) {
@@ -84,4 +95,43 @@ func intersectionEquals(i0, i1 string) error {
 			i0, intersectionObjects[i0], i1, intersectionObjects[i1])
 	}
 	return nil
+}
+
+func intersectionsPrepareComputations(res, i, r string) {
+	computations[res] = intersectionObjects[i].PrepareComputations(rays[r])
+}
+
+func computationsTimeEquals(comp, i string) error {
+	if computations[comp].T != intersectionObjects[i].T {
+		return fmt.Errorf("%s.t expected %f got %f", comp, intersectionObjects[i].T,
+			computations[comp].T)
+	}
+	return nil
+}
+
+func computationsObjectEquals(comp, i string) error {
+	fmt.Println(computations[comp], "!", intersectionObjects[i], i)
+	if computations[comp].Obj != intersectionObjects[i].Obj {
+		return fmt.Errorf("%s.object expected %+v got %+v", comp,
+			intersectionObjects[i].Obj, computations[comp].Obj)
+	}
+	return nil
+}
+
+func computationsTupleEquals(comp, component, vectorOrPoint string, x, y, z float64) error {
+	actual := fmt.Sprintf("%s.%s", comp, component)
+	switch component {
+	case "point":
+		tuples[actual] = computations[comp].Point
+	case "eyev":
+		tuples[actual] = computations[comp].Eyev
+	case "normalv":
+		tuples[actual] = computations[comp].Normalv
+	}
+
+	w := 1.0
+	if vectorOrPoint == "vector" {
+		w = 0.0
+	}
+	return isEqualTuple(actual, x, y, z, w)
 }

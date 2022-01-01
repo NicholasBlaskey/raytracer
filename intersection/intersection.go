@@ -1,11 +1,20 @@
 package intersection
 
-type Intersection struct {
-	T   float64
-	Obj interface{} // Make a shape interface (eventually)
+import (
+	"github.com/nicholasblaskey/raytracer/ray"
+	"github.com/nicholasblaskey/raytracer/tuple"
+)
+
+type Intersectable interface {
+	NormalAt(tuple.Tuple) tuple.Tuple
 }
 
-func New(t float64, obj interface{}) *Intersection {
+type Intersection struct {
+	T   float64
+	Obj Intersectable
+}
+
+func New(t float64, obj Intersectable) *Intersection {
 	return &Intersection{t, obj}
 }
 
@@ -25,4 +34,22 @@ func Hit(intersections []*Intersection) *Intersection {
 	}
 
 	return minIntersect
+}
+
+type Computations struct {
+	Obj     Intersectable
+	T       float64
+	Point   tuple.Tuple
+	Eyev    tuple.Tuple
+	Normalv tuple.Tuple
+}
+
+func (i *Intersection) PrepareComputations(r ray.Ray) *Computations {
+	c := &Computations{T: i.T, Obj: i.Obj}
+
+	c.Point = r.PositionAt(c.T)
+	c.Eyev = r.Direction.Mul(-1)
+	c.Normalv = c.Obj.NormalAt(c.Point)
+
+	return c
 }

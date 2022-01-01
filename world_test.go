@@ -23,6 +23,8 @@ func worldBefore(ctx context.Context, sc *godog.Scenario) (context.Context, erro
 func worldSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^%s ← world\(\)$`, wordRegex), createWorld)
 	ctx.Step(fmt.Sprintf(`^%s ← default_world\(\)$`, wordRegex), defaultWorld)
+	ctx.Step(fmt.Sprintf(`^%s ← intersect_world\(%s, %s\)$`,
+		wordRegex, wordRegex, wordRegex), intersectWorld)
 
 	ctx.Step(fmt.Sprintf(`^%s\.light = %s$`, wordRegex, wordRegex), worldLightEqual)
 	ctx.Step(fmt.Sprintf(`^%s contains ([A-Za-z0-9]+)$`, wordRegex), worldContains) // TODO fix this to use word regex
@@ -115,4 +117,8 @@ func worldContains(w, s string) error {
 			spheres[s], worlds[w].Objects)
 	}
 	return nil
+}
+
+func intersectWorld(res, w, r string) {
+	intersections[res] = worlds[w].Intersect(rays[r])
 }

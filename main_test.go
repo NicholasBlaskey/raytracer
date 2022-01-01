@@ -10,7 +10,7 @@ import (
 
 const (
 	epsilon    = 0.00001
-	wordRegex  = `([_A-Za-z0-9^\s]+)`
+	wordRegex  = `([_A-Za-z0-9^\s]+)` // TODO change this to no spaces? Why did we have no spaces?
 	intRegex   = `(\d+)`
 	floatRegex = `(\-*\d+\.\d+)`
 )
@@ -25,7 +25,7 @@ func TestFeatures(t *testing.T) {
 
 		Options: &godog.Options{
 			Format:   "pretty", //"progress", // pretty
-			Paths:    []string{"./features/material.feature"},
+			Paths:    []string{"./features/world.feature"},
 			TestingT: t, // Testing instance that will run subtests.
 			// Stops on the first failure
 			//StopOnFailure: true,
@@ -48,6 +48,7 @@ func initializeScenario(ctx *godog.ScenarioContext) {
 		intersectionBefore(ctx, sc)
 		lightBefore(ctx, sc)
 		materialBefore(ctx, sc)
+		worldBefore(ctx, sc)
 
 		return ctx, nil
 	})
@@ -61,4 +62,5 @@ func initializeScenario(ctx *godog.ScenarioContext) {
 	intersectionSteps(ctx)
 	lightSteps(ctx)
 	materialSteps(ctx)
+	worldSteps(ctx)
 }

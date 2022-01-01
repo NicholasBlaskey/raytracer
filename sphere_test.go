@@ -3,6 +3,8 @@ package main_test
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/nicholasblaskey/raytracer/intersection"
 	"github.com/nicholasblaskey/raytracer/material"
@@ -24,6 +26,7 @@ func sphereBefore(ctx context.Context, sc *godog.Scenario) (context.Context, err
 
 func sphereSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^%s ← sphere\(\)$`, wordRegex), createSphere)
+	ctx.Step(fmt.Sprintf(`^%s ← sphere\(\) with:$`, wordRegex), createSphereWith)
 	ctx.Step(fmt.Sprintf(`^%s ← intersect\(%s, %s\)$`,
 		wordRegex, wordRegex, wordRegex), intersectSphere)
 
@@ -53,6 +56,7 @@ func sphereSteps(ctx *godog.ScenarioContext) {
 		assignSphereMaterial)
 	ctx.Step(fmt.Sprintf(`^%s.material = %s$`, wordRegex, wordRegex),
 		sphereMaterialEqual)
+
 }
 
 func createSphere(s string) {
@@ -143,5 +147,73 @@ func sphereMaterialEqual(s, m string) error {
 		return fmt.Errorf("%s.material expected %v got %v", s,
 			spheres[s].Material, materials[m])
 	}
+	return nil
+}
+
+func parseFloatList(list string) ([]float64, error) {
+	// Remove ( )
+	list = strings.Split(list, "(")[1]
+	list = strings.ReplaceAll(list, ")", "")
+
+	floats := []float64{}
+	for _, v := range strings.Split(list, ",") {
+		vFloat, err := strconv.ParseFloat(strings.Trim(v, " "), 64)
+		if err != nil {
+			return nil, err
+		}
+
+		floats = append(floats, vFloat)
+	}
+	return floats, nil
+}
+
+func createSphereWith(s string, data *godog.Table) error {
+	sph := shape.NewSphere()
+
+	for _, row := range data.Rows {
+		k, v := row.Cells[0].Value, row.Cells[1].Value
+		switch k {
+		case "material.color":
+			col, err := parseFloatList(v)
+			if err != nil {
+				panic(err)
+			}
+			sph.Material.Color = tuple.Color(col[0], col[1], col[2])
+		case "material.diffuse":
+			diff, err := strconv.ParseFloat(v, 64)
+			if err != nil {
+				panic(err)
+			}
+
+			sph.Material.Diffuse = diff
+		case "material.specular":
+			spec, err := strconv.ParseFloat(v, 64)
+			if err != nil {
+				panic(err)
+			}
+
+			sph.Material.Specular = spec
+		case "transform":
+			vals, err := parseFloatList(v)
+			if err != nil {
+				return err
+			}
+
+			if strings.Contains(v, "scaling") {
+				sph.Transform = matrix.Scale(vals[0], vals[1], vals[2])
+
+			} else if false { // TODO add more matrices here
+
+			} else {
+				return fmt.Errorf("Unexpected transform type of %s", v)
+			}
+
+		default:
+			panic("Unexpected sphere with type of key=" + k + " value=" + v)
+		}
+	}
+
+	spheres[s] = sph
+
 	return nil
 }

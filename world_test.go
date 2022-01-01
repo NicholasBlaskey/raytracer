@@ -25,12 +25,28 @@ func worldSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^%s ← default_world\(\)$`, wordRegex), defaultWorld)
 	ctx.Step(fmt.Sprintf(`^%s ← intersect_world\(%s, %s\)$`,
 		wordRegex, wordRegex, wordRegex), intersectWorld)
+	ctx.Step(fmt.Sprintf(`^%s.light ← point_light\(point\(%s, %s, %s\), color\(%s, %s, %s\)\)$`,
+		wordRegex, floatRegex, floatRegex, floatRegex, floatRegex, floatRegex,
+		floatRegex), worldPointLightLiteral)
 
 	ctx.Step(fmt.Sprintf(`^%s\.light = %s$`, wordRegex, wordRegex), worldLightEqual)
 	ctx.Step(fmt.Sprintf(`^%s contains ([A-Za-z0-9]+)$`, wordRegex), worldContains) // TODO fix this to use word regex
 
 	ctx.Step(fmt.Sprintf(`^%s contains no objects$`, wordRegex), worldHasNoObjects)
 	ctx.Step(fmt.Sprintf(`^%s has no light source$`, wordRegex), worldHasNoLightSource)
+
+	ctx.Step(fmt.Sprintf(`^%s ← the (first|second) object in %s`,
+		wordRegex, wordRegex), theNthObjectFromWorld)
+	ctx.Step(fmt.Sprintf(`^%s ← shade_hit\(%s, %s\)`,
+		wordRegex, wordRegex, wordRegex), shadeHit)
+
+	ctx.Step(fmt.Sprintf(`^%s.material.ambient ← %s$`,
+		wordRegex, floatRegex), setObjectAmbientTo)
+	ctx.Step(fmt.Sprintf(`^%s = %s.material.color$`,
+		wordRegex, wordRegex), colorEqualToMaterialColor)
+
+	ctx.Step(fmt.Sprintf(`^%s ← color_at\(%s, %s\)$`,
+		wordRegex, wordRegex, wordRegex), worldColorAt)
 }
 
 func createWorld(w string) {
@@ -69,6 +85,12 @@ func defaultWorld(w string) {
 	worlds[w].Objects = append(worlds[w].Objects, s0, s1)
 }
 
+func worldPointLightLiteral(w string, x, y, z, r, g, b float64) {
+	l := light.NewPointLight(tuple.Point(x, y, z),
+		tuple.Color(r, g, b))
+	worlds[w].Light = &l
+}
+
 func worldLightEqual(w, l string) error {
 	if worlds[w].Light == nil {
 		return fmt.Errorf("%s.light expected %+v got nil", w, lights[l])
@@ -92,26 +114,6 @@ func worldContains(w, s string) error {
 		}
 	}
 
-	fmt.Println("EXPECTED", s)
-	fmt.Println(spheres[s].Material)
-	fmt.Println(spheres[s].Transform)
-
-	fmt.Println("ACTUAL 0")
-	fmt.Println(worlds[w].Objects[0].(*shape.Sphere).Material)
-	fmt.Println(worlds[w].Objects[0].(*shape.Sphere).Transform)
-
-	fmt.Println("ACTUAL 1")
-	fmt.Println(worlds[w].Objects[1].(*shape.Sphere).Material)
-	fmt.Println(worlds[w].Objects[1].(*shape.Sphere).Transform)
-
-	/*
-		fmt.Println(spheres[s].Material)
-		fmt.Println(worlds[w].Objects[0].(*shape.Sphere).Material)
-		fmt.Println(worlds[w].Objects[1].(*shape.Sphere).Material)
-		fmt.Println(
-			*(spheres[s].Material) == *(worlds[w].Objects[1].(*shape.Sphere).Material))
-	*/
-
 	if !found {
 		return fmt.Errorf("%s does not contain object %+v has only %+v", w,
 			spheres[s], worlds[w].Objects)
@@ -121,4 +123,34 @@ func worldContains(w, s string) error {
 
 func intersectWorld(res, w, r string) {
 	intersections[res] = worlds[w].Intersect(rays[r])
+}
+
+func theNthObjectFromWorld(res, nth, w string) {
+	switch nth {
+	case "first":
+		spheres[res] = worlds[w].Objects[0].(*shape.Sphere)
+	case "second":
+		spheres[res] = worlds[w].Objects[1].(*shape.Sphere)
+	default:
+		panic("Unspported nth object from world :" + nth)
+	}
+
+}
+
+func shadeHit(res, w, comps string) {
+	tuples[res] = worlds[w].ShadeHit(computations[comps])
+}
+
+func worldColorAt(res, w, r string) {
+	tuples[res] = worlds[w].ColorAt(rays[r])
+}
+
+func setObjectAmbientTo(obj string, v float64) {
+	spheres[obj].Material.Ambient = v
+}
+
+func colorEqualToMaterialColor(c, obj string) error {
+	actual := spheres[obj].Material.Color
+
+	return isEqualTuple(c, actual[0], actual[1], actual[2], actual[3])
 }

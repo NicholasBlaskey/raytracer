@@ -3,10 +3,13 @@ package intersection
 import (
 	"github.com/nicholasblaskey/raytracer/ray"
 	"github.com/nicholasblaskey/raytracer/tuple"
+
+	"github.com/nicholasblaskey/raytracer/material"
 )
 
 type Intersectable interface {
 	NormalAt(tuple.Tuple) tuple.Tuple
+	GetMaterial() *material.Material
 }
 
 type Intersection struct {
@@ -42,14 +45,21 @@ type Computations struct {
 	Point   tuple.Tuple
 	Eyev    tuple.Tuple
 	Normalv tuple.Tuple
+	Inside  bool
 }
 
+// TODO add multiple light sources here
 func (i *Intersection) PrepareComputations(r ray.Ray) *Computations {
 	c := &Computations{T: i.T, Obj: i.Obj}
 
 	c.Point = r.PositionAt(c.T)
 	c.Eyev = r.Direction.Mul(-1)
 	c.Normalv = c.Obj.NormalAt(c.Point)
+
+	if c.Normalv.Dot(c.Eyev) < 0.0 {
+		c.Inside = true
+		c.Normalv = c.Normalv.Mul(-1.0)
+	}
 
 	return c
 }

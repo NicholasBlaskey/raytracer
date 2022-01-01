@@ -53,3 +53,7 @@ func (s *Sphere) NormalAt(worldPoint tuple.Tuple) tuple.Tuple {
 
 	return worldNormal.Normalize()
 }
+
+func (s *Sphere) GetMaterial() *material.Material {
+	return s.Material
+}

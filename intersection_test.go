@@ -34,7 +34,7 @@ func intersectionSteps(ctx *godog.ScenarioContext) {
 
 	ctx.Step(fmt.Sprintf(`^%s\.t = %s$`, wordRegex, floatRegex),
 		intersectionTimeEqual)
-	ctx.Step(fmt.Sprintf(`^%s\.object = %s$`, wordRegex, wordRegex),
+	ctx.Step(fmt.Sprintf(`^%s.object = %s$`, wordRegex, wordRegex),
 		intersectionObjectEqual)
 
 	ctx.Step(fmt.Sprintf(`^%s is nothing$`, wordRegex),
@@ -42,8 +42,10 @@ func intersectionSteps(ctx *godog.ScenarioContext) {
 
 	ctx.Step(fmt.Sprintf(`^%s ← prepare_computations\(%s, %s\)$`,
 		wordRegex, wordRegex, wordRegex), intersectionsPrepareComputations)
-	ctx.Step(fmt.Sprintf(`^%s.t = %s.t$`,
+	ctx.Step(fmt.Sprintf(`^%s.t = %s\.t$`,
 		wordRegex, wordRegex), computationsTimeEquals)
+	ctx.Step(fmt.Sprintf(`^%s.inside = (true|false)`, wordRegex),
+		computationInsideEquals)
 	ctx.Step(fmt.Sprintf(`^%s.object = %s.object$`,
 		wordRegex, wordRegex), computationsObjectEquals)
 	ctx.Step(fmt.Sprintf(`^%s.(point|eyev|normalv) = (point|vector)\(%s, %s, %s\)$`,
@@ -134,4 +136,12 @@ func computationsTupleEquals(comp, component, vectorOrPoint string, x, y, z floa
 		w = 0.0
 	}
 	return isEqualTuple(actual, x, y, z, w)
+}
+
+func computationInsideEquals(comp string, expected string) error {
+	if computations[comp].Inside != (expected == "true") {
+		return fmt.Errorf("%s.inside expected %s got %t", comp, expected,
+			computations[comp].Inside)
+	}
+	return nil
 }

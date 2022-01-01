@@ -30,9 +30,15 @@ func transformSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^%s ← shearing\(%s, %s, %s, %s, %s, %s\)$`, wordRegex,
 		floatRegex, floatRegex, floatRegex, floatRegex, floatRegex, floatRegex),
 		createShear)
+	ctx.Step(fmt.Sprintf(`^%s ← view_transform\(%s, %s, %s\)$`,
+		wordRegex, wordRegex, wordRegex, wordRegex), createView)
 
 	ctx.Step(fmt.Sprintf(`^%s ← scaling\(%s, %s, %s\) \* rotation_z\(%s\)$`,
 		wordRegex, floatRegex, floatRegex, floatRegex, floatRegex), createScaleMulRotZ)
+	ctx.Step(fmt.Sprintf(`^%s = scaling\(%s, %s, %s\)$`,
+		wordRegex, floatRegex, floatRegex, floatRegex), matrixEqualToScaling)
+	ctx.Step(fmt.Sprintf(`^%s = translation\(%s, %s, %s\)$`,
+		wordRegex, floatRegex, floatRegex, floatRegex), matrixEqualToTranslation)
 }
 
 func createTranslation(t string, x, y, z float64) {
@@ -75,4 +81,20 @@ func matrixMulMatrixMulMatrix(res string, t0, t1, t2 string) {
 
 func createScaleMulRotZ(t string, x, y, z, theta float64) {
 	matrices[t] = matrix.Scale(x, y, z).Mul4(matrix.RotateZ(theta))
+}
+
+func createView(t, from, to, up string) {
+	matrices[t] = matrix.View(tuples[from], tuples[to], tuples[up])
+}
+
+func matrixEqualToScaling(m string, x, y, z float64) error {
+	expected := fmt.Sprintf("scaling(%f, %f, %f)", x, y, z)
+	createScale(expected, x, y, z)
+	return matrixEquals(m, expected)
+}
+
+func matrixEqualToTranslation(m string, x, y, z float64) error {
+	expected := fmt.Sprintf("translation(%f, %f, %f)", x, y, z)
+	createTranslation(expected, x, y, z)
+	return matrixEquals(m, expected)
 }

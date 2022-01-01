@@ -25,7 +25,7 @@ func TestFeatures(t *testing.T) {
 
 		Options: &godog.Options{
 			Format:   "pretty", //"progress", // pretty
-			Paths:    []string{"../features"},
+			Paths:    []string{"../features/transformation.feature"},
 			TestingT: t, // Testing instance that will run subtests.
 			// Stops on the first failure
 			//StopOnFailure: true,

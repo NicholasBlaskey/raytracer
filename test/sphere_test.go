@@ -117,7 +117,12 @@ func sphereSetTransformLiteral(s, translationType string, x, y, z float64) {
 
 func sphereTransformEquals(s, expected string) error {
 	actual := fmt.Sprintf("%s.transform", s)
-	matrices[actual] = spheres[s].Transform
+
+	if c, ok := cameras[s]; ok { // Camera case
+		matrices[actual] = c.Transform
+	} else { // Sphere case
+		matrices[actual] = spheres[s].Transform
+	}
 
 	return matrixEquals(actual, expected)
 }

@@ -32,6 +32,10 @@ func canvasSteps(ctx *godog.ScenarioContext) {
 		wordRegex, intRegex, intRegex, wordRegex), canvasWritePixel)
 	ctx.Step(fmt.Sprintf(`^pixel_at\(%s, %s, %s\) = %s$`,
 		wordRegex, intRegex, intRegex, wordRegex), canvasAssertPixel)
+	ctx.Step(fmt.Sprintf(`^pixel_at\(%s, %s, %s\) = color\(%s, %s, %s\)$`,
+		wordRegex, intRegex, intRegex, floatRegex,
+		floatRegex, floatRegex), canvasAssertPixelColor)
+
 	ctx.Step(fmt.Sprintf(`^%s ← canvas_to_ppm\(%s\)$`,
 		wordRegex, wordRegex), canvasToPPM)
 	ctx.Step(fmt.Sprintf(`^lines %s-%s of %s are$`,
@@ -77,6 +81,14 @@ func canvasWritePixel(canv string, x, y int, color string) {
 func canvasAssertPixel(canv string, x, y int, color string) error {
 	gotten := canvases[canv].ReadPixel(x, y)
 	return isEqualTuple(color, gotten[0], gotten[1], gotten[2], gotten[3])
+}
+
+func canvasAssertPixelColor(canv string, x, y int, r, g, b float64) error {
+	expected := fmt.Sprintf("pixel_at(%s, %d, %d)", canv, x, y)
+	tuples[expected] = tuple.Color(r, g, b)
+
+	gotten := canvases[canv].ReadPixel(x, y)
+	return isEqualTuple(expected, gotten[0], gotten[1], gotten[2], gotten[3])
 }
 
 func canvasToPPM(ppm string, canv string) {

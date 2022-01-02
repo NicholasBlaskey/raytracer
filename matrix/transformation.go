@@ -3,8 +3,6 @@ package matrix
 import (
 	"math"
 
-	"fmt"
-
 	"github.com/nicholasblaskey/raytracer/tuple"
 )
 
@@ -63,8 +61,6 @@ func Shear(xy, xz, yx, yz, zx, zy float64) Mat4 {
 }
 
 func View(from, to, up tuple.Tuple) Mat4 {
-	fmt.Println(from, to, up)
-
 	forward := to.Sub(from).Normalize()
 	upn := up.Normalize()
 	left := forward.Cross(upn)
@@ -78,7 +74,4 @@ func View(from, to, up tuple.Tuple) Mat4 {
 	}
 
 	return orientation.Mul4(Translate(-from[0], -from[1], -from[2]))
-
-	//return Translate(-from[0], -from[1], -from[2]).Mul4(orientation)
-
 }

@@ -47,6 +47,9 @@ func worldSteps(ctx *godog.ScenarioContext) {
 
 	ctx.Step(fmt.Sprintf(`^%s ← color_at\(%s, %s\)$`,
 		wordRegex, wordRegex, wordRegex), worldColorAt)
+
+	ctx.Step(fmt.Sprintf(`^is_shadowed\(%s, %s\) is (true|false)$`,
+		wordRegex, wordRegex), isShadowed)
 }
 
 func createWorld(w string) {
@@ -153,4 +156,13 @@ func colorEqualToMaterialColor(c, obj string) error {
 	actual := spheres[obj].Material.Color
 
 	return isEqualTuple(c, actual[0], actual[1], actual[2], actual[3])
+}
+
+func isShadowed(w, p, expectedString string) error {
+	expected := expectedString == "true"
+	if actual := worlds[w].IsShadowed(tuples[p]); actual != expected {
+		return fmt.Errorf("is_shadowed(%s, %s) expected %t got %t",
+			w, p, expected, actual)
+	}
+	return nil
 }

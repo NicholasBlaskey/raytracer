@@ -25,12 +25,18 @@ func New() *Material {
 	}
 }
 
-func (m *Material) Lighting(light light.Point, point, eyev, normalv tuple.Tuple) tuple.Tuple {
+func (m *Material) Lighting(light light.Point, point, eyev, normalv tuple.Tuple,
+	inShadow bool) tuple.Tuple {
+
 	effColor := m.Color.ColorMul(light.Intensity)
 
 	lightv := light.Position.Sub(point).Normalize()
 
 	ambient := effColor.Mul(m.Ambient)
+
+	if inShadow {
+		return ambient
+	}
 
 	lightDotNormal := lightv.Dot(normalv)
 	diffuse, specular := tuple.Color(0.0, 0.0, 0.0), tuple.Color(0.0, 0.0, 0.0)

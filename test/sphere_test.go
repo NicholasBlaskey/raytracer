@@ -206,7 +206,8 @@ func createSphereWith(s string, data *godog.Table) error {
 
 			if strings.Contains(v, "scaling") {
 				sph.Transform = matrix.Scale(vals[0], vals[1], vals[2])
-
+			} else if strings.Contains(v, "translation") {
+				sph.Transform = matrix.Translate(vals[0], vals[1], vals[2])
 			} else if false { // TODO add more matrices here
 
 			} else {

@@ -50,6 +50,12 @@ func intersectionSteps(ctx *godog.ScenarioContext) {
 		wordRegex, wordRegex), computationsObjectEquals)
 	ctx.Step(fmt.Sprintf(`^%s.(point|eyev|normalv) = (point|vector)\(%s, %s, %s\)$`,
 		wordRegex, floatRegex, floatRegex, floatRegex), computationsTupleEquals)
+
+	ctx.Step(fmt.Sprintf(`^%s.over_point.(x|y|z) < -EPSILON/2$`, wordRegex),
+		overPointLessThanEpsilonOver2)
+	ctx.Step(fmt.Sprintf(`^%s.point.(x|y|z) > %s.over_point.(x|y|z)$`,
+		wordRegex, wordRegex), pointBiggerThanOverPoint)
+
 }
 
 func intersectionCreate(i string, t float64, obj string) {
@@ -142,6 +148,39 @@ func computationInsideEquals(comp string, expected string) error {
 	if computations[comp].Inside != (expected == "true") {
 		return fmt.Errorf("%s.inside expected %s got %t", comp, expected,
 			computations[comp].Inside)
+	}
+	return nil
+}
+
+func overPointLessThanEpsilonOver2(comp, xyz string) error {
+	val := computations[comp].OverPoint[0]
+	if xyz == "y" {
+		val = computations[comp].OverPoint[1]
+	} else {
+		val = computations[comp].OverPoint[2]
+	}
+
+	if val >= -intersection.EPSILON/2.0 {
+		return fmt.Errorf("%s.over_point.%s (%f) is not < (%f) -EPSILON/2",
+			comp, xyz, val, -intersection.EPSILON/2.0)
+	}
+	return nil
+}
+
+func pointBiggerThanOverPoint(comp, xyz string) error {
+	over := computations[comp].OverPoint[0]
+	p := computations[comp].Point[0]
+	if xyz == "y" {
+		p = computations[comp].Point[1]
+		over = computations[comp].OverPoint[1]
+	} else {
+		p = computations[comp].Point[2]
+		over = computations[comp].OverPoint[2]
+	}
+
+	if p <= over {
+		return fmt.Errorf("%s.point.%s (%f) is not < (%f) %s.over_point.%s",
+			comp, xyz, p, over, comp, xyz)
 	}
 	return nil
 }

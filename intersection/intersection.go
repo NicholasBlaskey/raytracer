@@ -7,6 +7,8 @@ import (
 	"github.com/nicholasblaskey/raytracer/material"
 )
 
+const EPSILON = 0.000000001 // TODO expose this and use it system wide.
+
 type Intersectable interface {
 	NormalAt(tuple.Tuple) tuple.Tuple
 	GetMaterial() *material.Material
@@ -40,12 +42,13 @@ func Hit(intersections []*Intersection) *Intersection {
 }
 
 type Computations struct {
-	Obj     Intersectable
-	T       float64
-	Point   tuple.Tuple
-	Eyev    tuple.Tuple
-	Normalv tuple.Tuple
-	Inside  bool
+	Obj       Intersectable
+	T         float64
+	Point     tuple.Tuple
+	OverPoint tuple.Tuple
+	Eyev      tuple.Tuple
+	Normalv   tuple.Tuple
+	Inside    bool
 }
 
 // TODO add multiple light sources here
@@ -53,6 +56,7 @@ func (i *Intersection) PrepareComputations(r ray.Ray) *Computations {
 	c := &Computations{T: i.T, Obj: i.Obj}
 
 	c.Point = r.PositionAt(c.T)
+
 	c.Eyev = r.Direction.Mul(-1)
 	c.Normalv = c.Obj.NormalAt(c.Point)
 
@@ -60,6 +64,8 @@ func (i *Intersection) PrepareComputations(r ray.Ray) *Computations {
 		c.Inside = true
 		c.Normalv = c.Normalv.Mul(-1.0)
 	}
+
+	c.OverPoint = c.Point.Add(c.Normalv.Mul(EPSILON))
 
 	return c
 }

@@ -42,7 +42,7 @@ Scenario: Shading an intersection from the inside
     And w.light ← point_light(point(0.0, 0.25, 0.0), color(1.0, 1.0, 1.0))
     And r ← ray(point(0.0, 0.0, 0.0), vector(0.0, 0.0, 1.0))
     And shape ← the second object in w
-    And i ← intersection(0.5, shape)
+    And i ← intersection(0.50, shape) 
   When comps ← prepare_computations(i, r)
     And c ← shade_hit(w, comps)
   Then c = color(0.90498, 0.90498, 0.90498)
@@ -88,3 +88,17 @@ Scenario: There is no shadow when an object is behind the point
   Given w ← default_world()
     And p ← point(-2.0, 2.0, -2.0)
    Then is_shadowed(w, p) is false
+
+Scenario: shade_hit() is given an intersection in shadow
+  Given w ← world()
+    And w.light ← point_light(point(0.0, 0.0, -10.0), color(1.0, 1.0, 1.0))
+    And s1 ← sphere()
+    And s1 is added to w
+    And s2 ← sphere() with:
+      | transform | translation(0, 0, 10) |
+    And s2 is added to w
+    And r ← ray(point(0.0, 0.0, 5.0), vector(0.0, 0.0, 1.0))
+    And i ← intersection(4.0, s2)
+  When comps ← prepare_computations(i, r)
+    And c ← shade_hit(w, comps)
+  Then c = color(0.1, 0.1, 0.1)

@@ -31,6 +31,7 @@ func worldSteps(ctx *godog.ScenarioContext) {
 
 	ctx.Step(fmt.Sprintf(`^%s\.light = %s$`, wordRegex, wordRegex), worldLightEqual)
 	ctx.Step(fmt.Sprintf(`^%s contains ([A-Za-z0-9]+)$`, wordRegex), worldContains) // TODO fix this to use word regex
+	ctx.Step(fmt.Sprintf(`^%s is added to %s$`, wordRegex, wordRegex), addToWorld)
 
 	ctx.Step(fmt.Sprintf(`^%s contains no objects$`, wordRegex), worldHasNoObjects)
 	ctx.Step(fmt.Sprintf(`^%s has no light source$`, wordRegex), worldHasNoLightSource)
@@ -102,6 +103,10 @@ func worldLightEqual(w, l string) error {
 		return fmt.Errorf("%s.light expected %+v got %+v", w, worlds[w].Light, lights[l])
 	}
 	return nil
+}
+
+func addToWorld(s, w string) {
+	worlds[w].Objects = append(worlds[w].Objects, spheres[s])
 }
 
 func worldContains(w, s string) error {

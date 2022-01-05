@@ -106,17 +106,14 @@ func worldLightEqual(w, l string) error {
 }
 
 func addToWorld(s, w string) {
-	worlds[w].Objects = append(worlds[w].Objects, spheres[s])
+	worlds[w].Objects = append(worlds[w].Objects, shapes[s])
 }
 
 func worldContains(w, s string) error {
 	found := false
 	for _, obj := range worlds[w].Objects {
-		fmt.Println(obj.(*shape.Sphere).Transform == spheres[s].Transform,
-			*(obj.(*shape.Sphere).Material) == *(spheres[s].Material))
-
-		if obj.(*shape.Sphere).Transform == spheres[s].Transform &&
-			*(obj.(*shape.Sphere).Material) == *(spheres[s].Material) {
+		if obj.(*shape.Sphere).Transform == shapes[s].GetTransform() &&
+			*(obj.(*shape.Sphere).Material) == *(shapes[s].GetMaterial()) {
 			found = true
 			break
 		}
@@ -124,7 +121,7 @@ func worldContains(w, s string) error {
 
 	if !found {
 		return fmt.Errorf("%s does not contain object %+v has only %+v", w,
-			spheres[s], worlds[w].Objects)
+			shapes[s], worlds[w].Objects)
 	}
 	return nil
 }
@@ -136,9 +133,9 @@ func intersectWorld(res, w, r string) {
 func theNthObjectFromWorld(res, nth, w string) {
 	switch nth {
 	case "first":
-		spheres[res] = worlds[w].Objects[0].(*shape.Sphere)
+		shapes[res] = worlds[w].Objects[0]
 	case "second":
-		spheres[res] = worlds[w].Objects[1].(*shape.Sphere)
+		shapes[res] = worlds[w].Objects[1]
 	default:
 		panic("Unspported nth object from world :" + nth)
 	}
@@ -154,11 +151,11 @@ func worldColorAt(res, w, r string) {
 }
 
 func setObjectAmbientTo(obj string, v float64) {
-	spheres[obj].Material.Ambient = v
+	shapes[obj].GetMaterial().Ambient = v
 }
 
 func colorEqualToMaterialColor(c, obj string) error {
-	actual := spheres[obj].Material.Color
+	actual := shapes[obj].GetMaterial().Color
 
 	return isEqualTuple(c, actual[0], actual[1], actual[2], actual[3])
 }

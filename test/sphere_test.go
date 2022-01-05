@@ -15,11 +15,11 @@ import (
 	"github.com/cucumber/godog"
 )
 
-var spheres map[string]*shape.Sphere
+//var spheres map[string]*shape.Sphere
 var intersections map[string][]*intersection.Intersection
 
 func sphereBefore(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
-	spheres = make(map[string]*shape.Sphere)
+	//	spheres = make(map[string]*shape.Sphere)
 	intersections = make(map[string][]*intersection.Intersection)
 	return ctx, nil
 }
@@ -58,15 +58,14 @@ func sphereSteps(ctx *godog.ScenarioContext) {
 		assignSphereMaterial)
 	ctx.Step(fmt.Sprintf(`^%s.material = %s$`, wordRegex, wordRegex),
 		sphereMaterialEqual)
-
 }
 
 func createSphere(s string) {
-	spheres[s] = shape.NewSphere()
+	shapes[s] = shape.NewSphere()
 }
 
 func intersectSphere(intersection, s, r string) {
-	intersections[intersection] = spheres[s].Intersections(rays[r])
+	intersections[intersection] = shapes[s].Intersections(rays[r])
 }
 
 func intersectCountEqual(i string, expected int) error {
@@ -96,23 +95,23 @@ func intersectObjectEqual(i string, index int, expected string) error {
 			index, len(intersections[i]))
 	}
 
-	if intersections[i][index].Obj != spheres[expected] {
+	if intersections[i][index].Obj != shapes[expected] {
 		return fmt.Errorf("%s[%d] expected %v got %v", i, index,
-			spheres[expected], intersections[i][index].Obj)
+			shapes[expected], intersections[i][index].Obj)
 	}
 	return nil
 }
 
 func sphereSetTransform(s, t string) {
-	spheres[s].Transform = matrices[t].(matrix.Mat4)
+	shapes[s].SetTransform(matrices[t].(matrix.Mat4))
 }
 
 func sphereSetTransformLiteral(s, translationType string, x, y, z float64) {
 	switch translationType {
 	case "translation":
-		spheres[s].Transform = matrix.Translate(x, y, z)
+		shapes[s].SetTransform(matrix.Translate(x, y, z))
 	case "scaling":
-		spheres[s].Transform = matrix.Scale(x, y, z)
+		shapes[s].SetTransform(matrix.Scale(x, y, z))
 	}
 
 }
@@ -123,7 +122,7 @@ func sphereTransformEquals(s, expected string) error {
 	if c, ok := cameras[s]; ok { // Camera case
 		matrices[actual] = c.Transform
 	} else { // Sphere case
-		matrices[actual] = spheres[s].Transform
+		matrices[actual] = shapes[s].GetTransform()
 	}
 
 	return matrixEquals(actual, expected)
@@ -133,18 +132,18 @@ func sphereTransformEqualsTranslate(s string, x, y, z float64) error {
 	actual := fmt.Sprintf("actual %s.transform", s)
 	expected := fmt.Sprintf("expected %s.transform", s)
 
-	matrices[actual] = spheres[s].Transform
+	matrices[actual] = shapes[s].GetTransform()
 	matrices[expected] = matrix.Translate(x, y, z)
 
 	return matrixEquals(actual, expected)
 }
 
 func sphereNormalAt(n, s string, x, y, z float64) {
-	tuples[n] = spheres[s].NormalAt(tuple.Point(x, y, z))
+	tuples[n] = shapes[s].NormalAt(tuple.Point(x, y, z))
 }
 
 func getSphereMaterial(m, s string) {
-	materials[m] = spheres[s].Material
+	materials[m] = shapes[s].GetMaterial()
 }
 
 func materialIsDefault(m string) error {
@@ -156,13 +155,13 @@ func materialIsDefault(m string) error {
 }
 
 func assignSphereMaterial(s, m string) {
-	spheres[s].Material = materials[m]
+	shapes[s].SetMaterial(materials[m])
 }
 
 func sphereMaterialEqual(s, m string) error {
-	if spheres[s].Material != materials[m] {
+	if shapes[s].GetMaterial() != materials[m] {
 		return fmt.Errorf("%s.material expected %v got %v", s,
-			spheres[s].Material, materials[m])
+			shapes[s].GetMaterial(), materials[m])
 	}
 	return nil
 }
@@ -231,7 +230,7 @@ func createSphereWith(s string, data *godog.Table) error {
 		}
 	}
 
-	spheres[s] = sph
+	shapes[s] = sph
 
 	return nil
 }

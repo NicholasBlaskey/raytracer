@@ -59,7 +59,7 @@ func intersectionSteps(ctx *godog.ScenarioContext) {
 }
 
 func intersectionCreate(i string, t float64, obj string) {
-	intersectionObjects[i] = intersection.New(t, spheres[obj])
+	intersectionObjects[i] = intersection.New(t, shapes[obj])
 }
 
 func intersectionTimeEqual(i string, t float64) error {
@@ -70,7 +70,7 @@ func intersectionTimeEqual(i string, t float64) error {
 }
 
 func intersectionObjectEqual(i, obj string) error {
-	if actual := intersectionObjects[i].Obj; actual != spheres[obj] {
+	if actual := intersectionObjects[i].Obj; actual != shapes[obj] {
 		return fmt.Errorf("%s.object expected %v got %v", i, obj, actual)
 	}
 	return nil

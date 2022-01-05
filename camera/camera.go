@@ -3,6 +3,8 @@ package camera
 import (
 	"math"
 
+	"github.com/schollz/progressbar/v3"
+
 	"github.com/nicholasblaskey/raytracer/canvas"
 	"github.com/nicholasblaskey/raytracer/matrix"
 	"github.com/nicholasblaskey/raytracer/ray"
@@ -64,8 +66,11 @@ func (c *Camera) RayForPixel(x, y int) ray.Ray {
 
 func (c *Camera) Render(w *world.World) *canvas.Canvas {
 	canv := canvas.New(c.HSize, c.VSize)
+	bar := progressbar.Default(int64(canv.Width * canv.Height))
 	for y := 0; y < c.VSize; y++ {
 		for x := 0; x < c.HSize; x++ {
+
+			bar.Add(1)
 
 			ray := c.RayForPixel(x, y)
 			color := w.ColorAt(ray)

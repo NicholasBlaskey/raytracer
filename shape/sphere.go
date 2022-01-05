@@ -57,3 +57,15 @@ func (s *Sphere) NormalAt(worldPoint tuple.Tuple) tuple.Tuple {
 func (s *Sphere) GetMaterial() *material.Material {
 	return s.Material
 }
+
+func (s *Sphere) SetMaterial(m *material.Material) {
+	s.Material = m
+}
+
+func (s *Sphere) GetTransform() matrix.Mat4 {
+	return s.Transform
+}
+
+func (s *Sphere) SetTransform(m matrix.Mat4) {
+	s.Transform = m
+}

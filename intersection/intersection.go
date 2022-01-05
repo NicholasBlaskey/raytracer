@@ -1,6 +1,7 @@
 package intersection
 
 import (
+	"github.com/nicholasblaskey/raytracer/matrix"
 	"github.com/nicholasblaskey/raytracer/ray"
 	"github.com/nicholasblaskey/raytracer/tuple"
 
@@ -10,8 +11,14 @@ import (
 const EPSILON = 0.000000001 // TODO expose this and use it system wide.
 
 type Intersectable interface {
-	NormalAt(tuple.Tuple) tuple.Tuple
+	GetTransform() matrix.Mat4
+	SetTransform(matrix.Mat4)
+	//
 	GetMaterial() *material.Material
+	SetMaterial(*material.Material)
+	//
+	NormalAt(tuple.Tuple) tuple.Tuple
+	Intersections(ray.Ray) []*Intersection
 }
 
 type Intersection struct {

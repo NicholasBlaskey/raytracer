@@ -42,6 +42,8 @@ func sphereSteps(ctx *godog.ScenarioContext) {
 
 	ctx.Step(fmt.Sprintf(`^%s.transform = %s$`, wordRegex, wordRegex),
 		sphereTransformEquals)
+	ctx.Step(fmt.Sprintf(`^%s.transform = translation\(%s, %s, %s\)$`, wordRegex,
+		floatRegex, floatRegex, floatRegex), sphereTransformEqualsTranslate)
 	ctx.Step(fmt.Sprintf(`^set_transform\(%s, (scaling|translation)\(%s, %s, %s\)\)$`,
 		wordRegex, floatRegex, floatRegex, floatRegex), sphereSetTransformLiteral)
 
@@ -123,6 +125,16 @@ func sphereTransformEquals(s, expected string) error {
 	} else { // Sphere case
 		matrices[actual] = spheres[s].Transform
 	}
+
+	return matrixEquals(actual, expected)
+}
+
+func sphereTransformEqualsTranslate(s string, x, y, z float64) error {
+	actual := fmt.Sprintf("actual %s.transform", s)
+	expected := fmt.Sprintf("expected %s.transform", s)
+
+	matrices[actual] = spheres[s].Transform
+	matrices[expected] = matrix.Translate(x, y, z)
 
 	return matrixEquals(actual, expected)
 }

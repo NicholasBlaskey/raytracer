@@ -34,10 +34,17 @@ func shapeBefore(ctx context.Context, sc *godog.Scenario) (context.Context, erro
 
 func shapeSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^%s ← test_shape\(\)$`, wordRegex), createTestShape)
+
+	ctx.Step(fmt.Sprintf(`^%s.saved_ray.(origin|direction) = (point|vector)\(%s, %s, %s\)$`,
+		wordRegex, floatRegex, floatRegex, floatRegex), savedRayEqual)
 }
 
 func createTestShape(s string) {
 	shapes[s] = testShapeNew()
+}
+
+func savedRayEqual(s, origOrDir, pointOrVec string, x, y, z float64) error {
+	return rayComponentEqualVecOrPoint("saved_ray", origOrDir, pointOrVec, x, y, z)
 }
 
 type testShape struct {
@@ -66,9 +73,15 @@ func (s *testShape) SetMaterial(m *material.Material) {
 }
 
 func (s *testShape) NormalAt(t tuple.Tuple) tuple.Tuple {
-	return t
+	return intersection.NormalAt(s, t,
+		func(objectPoint tuple.Tuple) tuple.Tuple {
+			return tuple.Vector(objectPoint[0], objectPoint[1], objectPoint[2]).Normalize()
+		})
 }
 
-func (s *testShape) Intersections(r ray.Ray) []*intersection.Intersection {
-	return nil
+func (s *testShape) Intersections(origR ray.Ray) []*intersection.Intersection {
+	return intersection.Intersections(s, origR, func(r ray.Ray) []*intersection.Intersection {
+		rays["saved_ray"] = r
+		return nil
+	})
 }

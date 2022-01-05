@@ -21,6 +21,24 @@ type Intersectable interface {
 	Intersections(ray.Ray) []*Intersection
 }
 
+func Intersections(i Intersectable, r ray.Ray,
+	intersectFunc func(ray.Ray) []*Intersection) []*Intersection {
+
+	return intersectFunc(r.Transform(i.GetTransform().Inv()))
+}
+
+func NormalAt(i Intersectable, worldPoint tuple.Tuple,
+	normFunc func(tuple.Tuple) tuple.Tuple) tuple.Tuple {
+
+	invT := i.GetTransform().Inv()
+	objectPoint := invT.Mul4x1(worldPoint)
+	objectNormal := normFunc(objectPoint)
+	worldNormal := invT.T().Mul4x1(objectNormal)
+	worldNormal[3] = 0.0
+
+	return worldNormal.Normalize()
+}
+
 type Intersection struct {
 	T   float64
 	Obj Intersectable

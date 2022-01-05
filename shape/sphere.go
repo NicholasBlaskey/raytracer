@@ -19,9 +19,7 @@ func NewSphere() *Sphere {
 	return &Sphere{matrix.Ident4(), material.New()}
 }
 
-func (s *Sphere) Intersections(origR ray.Ray) []*intersection.Intersection {
-	r := origR.Transform(s.Transform.Inv())
-
+func (s *Sphere) localIntersections(r ray.Ray) []*intersection.Intersection {
 	sphereToRay := r.Origin.Sub(tuple.Point(0.0, 0.0, 0.0))
 
 	a := r.Direction.Dot(r.Direction)
@@ -42,16 +40,17 @@ func (s *Sphere) Intersections(origR ray.Ray) []*intersection.Intersection {
 		&intersection.Intersection{Obj: s, T: t1}}
 }
 
+func (s *Sphere) Intersections(origR ray.Ray) []*intersection.Intersection {
+	return intersection.Intersections(s, origR, s.localIntersections)
+}
+
+func (s *Sphere) localNormalAt(objectPoint tuple.Tuple) tuple.Tuple {
+	return objectPoint.Sub(tuple.Point(0.0, 0.0, 0.0))
+}
+
+// TODO See if there is a performance hit doing this.
 func (s *Sphere) NormalAt(worldPoint tuple.Tuple) tuple.Tuple {
-	invT := s.Transform.Inv()
-
-	objectPoint := invT.Mul4x1(worldPoint)
-	objectNormal := objectPoint.Sub(tuple.Point(0.0, 0.0, 0.0))
-
-	worldNormal := invT.T().Mul4x1(objectNormal)
-	worldNormal[3] = 0.0
-
-	return worldNormal.Normalize()
+	return intersection.NormalAt(s, worldPoint, s.localNormalAt)
 }
 
 func (s *Sphere) GetMaterial() *material.Material {

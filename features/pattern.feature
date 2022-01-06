@@ -52,3 +52,49 @@ Scenario: Stripes with both an object and a pattern transformation
   When c ← stripe_at_object(pattern, object, point(2.5, 0.0, 0.0))
   Then c = white
 
+Scenario: The default pattern transformation
+  Given pattern ← test_pattern()
+  Then pattern.transform = identity_matrix
+
+Scenario: Assigning a transformation
+  Given pattern ← test_pattern()
+  When set_pattern_transform(pattern, translation(1.0, 2.0, 3.0))
+  Then pattern.transform = translation(1.0, 2.0, 3.0)
+
+Scenario: A pattern with an object transformation
+  Given shape ← sphere()
+    And set_transform(shape, scaling(2.0, 2.0, 2.0))
+    And pattern ← test_pattern()
+  When c ← pattern_at_shape(pattern, shape, point(2.0, 3.0, 4.0))
+  Then c = color(1.0, 1.5, 2.0)
+
+Scenario: A pattern with a pattern transformation
+  Given shape ← sphere()
+    And pattern ← test_pattern()
+    And set_pattern_transform(pattern, scaling(2.0, 2.0, 2.0))
+  When c ← pattern_at_shape(pattern, shape, point(2.0, 3.0, 4.0))
+  Then c = color(1.0, 1.5, 2.0)
+
+Scenario: A pattern with both an object and a pattern transformation
+  Given shape ← sphere()
+    And set_transform(shape, scaling(2.0, 2.0, 2.0))
+    And pattern ← test_pattern()
+    And set_pattern_transform(pattern, translation(0.5, 1.0, 1.5))
+  When c ← pattern_at_shape(pattern, shape, point(2.5, 3.0, 3.5))
+  Then c = color(0.75, 0.5, 0.25)
+
+Scenario: A gradient linearly interpolates between colors
+  Given pattern ← gradient_pattern(white, black)
+  Then pattern_at(pattern, point(0.0, 0.0, 0.0)) = white
+    And pattern_at(pattern, point(0.25, 0.0, 0.0)) = color(0.75, 0.75, 0.75)
+    And pattern_at(pattern, point(0.5, 0.0, 0.0)) = color(0.5, 0.5, 0.5)
+    And pattern_at(pattern, point(0.75, 0.0, 0.0)) = color(0.25, 0.25, 0.25)
+
+
+Scenario: A ring should extend in both x and z
+  Given pattern ← ring_pattern(white, black)
+  Then pattern_at(pattern, point(0.0, 0.0, 0.0)) = white
+    And pattern_at(pattern, point(1.0, 0.0, 0.0)) = black
+    And pattern_at(pattern, point(0.0, 0.0, 1.0)) = black
+    # 0.708 = just slightly more than √2/2
+    And pattern_at(pattern, point(0.708, 0.0, 0.708)) = black

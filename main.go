@@ -1,9 +1,6 @@
 package main
 
 import (
-	//"fmt"
-	//"math"
-
 	"math"
 
 	"github.com/nicholasblaskey/raytracer/camera"
@@ -286,12 +283,18 @@ func main() {
 // Draw scene with a plane
 func main() {
 	n := 600
-
-	pattern := material.StripePattern(
+	pattern := material.RingPattern(
 		tuple.Color(0.7, 0.3, 0.3),
 		tuple.Color(0.3, 0.3, 0.7),
 	)
-	pattern.SetTransform(matrix.Scale(0.1, 0.1, 0.1))
+
+	/*
+		pattern := material.GradientPattern(
+			tuple.Color(0.7, 0.3, 0.3),
+			tuple.Color(0.3, 0.3, 0.7),
+		)
+	*/
+	pattern.SetTransform(matrix.Scale(0.01, 0.01, 0.01))
 
 	floor := shape.NewPlane()
 	floor.Material.Color = tuple.Color(1.0, 0.9, 0.9)

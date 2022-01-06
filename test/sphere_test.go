@@ -121,6 +121,8 @@ func sphereTransformEquals(s, expected string) error {
 
 	if c, ok := cameras[s]; ok { // Camera case
 		matrices[actual] = c.Transform
+	} else if p, ok := patterns[s]; ok { // Pattern case
+		matrices[actual] = p.GetTransform()
 	} else { // Sphere case
 		matrices[actual] = shapes[s].GetTransform()
 	}
@@ -132,7 +134,11 @@ func sphereTransformEqualsTranslate(s string, x, y, z float64) error {
 	actual := fmt.Sprintf("actual %s.transform", s)
 	expected := fmt.Sprintf("expected %s.transform", s)
 
-	matrices[actual] = shapes[s].GetTransform()
+	if p, ok := patterns[s]; ok {
+		matrices[actual] = p.GetTransform()
+	} else {
+		matrices[actual] = shapes[s].GetTransform()
+	}
 	matrices[expected] = matrix.Translate(x, y, z)
 
 	return matrixEquals(actual, expected)

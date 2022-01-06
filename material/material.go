@@ -13,6 +13,7 @@ type Material struct {
 	Diffuse   float64
 	Specular  float64
 	Shininess float64
+	Pattern   Pattern
 }
 
 func New() *Material {
@@ -28,7 +29,12 @@ func New() *Material {
 func (m *Material) Lighting(light light.Point, point, eyev, normalv tuple.Tuple,
 	inShadow bool) tuple.Tuple {
 
-	effColor := m.Color.ColorMul(light.Intensity)
+	col := m.Color
+	if m.Pattern != nil {
+		col = m.Pattern.At(point)
+	}
+
+	effColor := col.ColorMul(light.Intensity)
 
 	lightv := light.Position.Sub(point).Normalize()
 

@@ -8,6 +8,7 @@ import (
 
 	"github.com/nicholasblaskey/raytracer/camera"
 	"github.com/nicholasblaskey/raytracer/light"
+	"github.com/nicholasblaskey/raytracer/material"
 	"github.com/nicholasblaskey/raytracer/matrix"
 	"github.com/nicholasblaskey/raytracer/shape"
 	"github.com/nicholasblaskey/raytracer/tuple"
@@ -284,21 +285,29 @@ func main() {
 
 // Draw scene with a plane
 func main() {
-	n := 100
+	n := 600
+
+	pattern := material.StripePattern(
+		tuple.Color(0.7, 0.3, 0.3),
+		tuple.Color(0.3, 0.3, 0.7),
+	)
 
 	floor := shape.NewPlane()
 	floor.Material.Color = tuple.Color(1.0, 0.9, 0.9)
 	floor.Material.Specular = 0.0
+	floor.Material.Pattern = pattern
 
 	leftWall := shape.NewPlane()
 	leftWall.Transform = matrix.Translate(0.0, 0.0, 2.0).Mul4(
 		matrix.RotateX(math.Pi / 2))
+	leftWall.Material.Pattern = pattern
 
 	middle := shape.NewSphere()
 	middle.Transform = matrix.Translate(-0.5, 2.0, 0.5)
 	middle.Material.Color = tuple.Color(0.1, 1.0, 0.5)
 	middle.Material.Diffuse = 0.7
 	middle.Material.Specular = 0.3
+	middle.Material.Pattern = pattern
 
 	right := shape.NewSphere()
 	right.Transform = matrix.Translate(1.5, 0.5, -0.5).Mul4(
@@ -306,6 +315,7 @@ func main() {
 	right.Material.Color = tuple.Color(0.5, 1.0, 0.01)
 	right.Material.Diffuse = 0.7
 	right.Material.Specular = 0.3
+	right.Material.Pattern = pattern
 
 	left := shape.NewSphere()
 	left.Transform = matrix.Translate(-1.5, 0.33, -0.75).Mul4(
@@ -313,6 +323,7 @@ func main() {
 	left.Material.Color = tuple.Color(1.0, 0.8, 0.1)
 	left.Material.Diffuse = 0.7
 	left.Material.Specular = 0.3
+	left.Material.Pattern = pattern
 
 	w := world.New()
 	l := light.NewPointLight(tuple.Point(-10.0, 1.0, -10.0),

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/nicholasblaskey/raytracer/material"
+	"github.com/nicholasblaskey/raytracer/tuple"
 
 	"github.com/cucumber/godog"
 )
@@ -37,9 +38,16 @@ func materialSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^%s ← lighting\(%s, %s, %s, %s, %s\)$`,
 		wordRegex, wordRegex, wordRegex, wordRegex, wordRegex, wordRegex),
 		materialLighting)
+	ctx.Step(fmt.Sprintf(`^%s ← lighting\(%s, %s, point\(%s, %s, %s\), %s, %s, %s\)$`,
+		wordRegex, wordRegex, wordRegex, floatRegex, floatRegex, floatRegex, wordRegex,
+		wordRegex, wordRegex), materialLightingPosLiteral)
 	ctx.Step(fmt.Sprintf(`^%s ← lighting\(%s, %s, %s, %s, %s, %s\)$`,
 		wordRegex, wordRegex, wordRegex, wordRegex, wordRegex, wordRegex, wordRegex),
 		materialLightingWithShadowFlag)
+
+	ctx.Step(fmt.Sprintf(`^%s.pattern ← stripe_pattern\(color\(%s, %s, %s\), color\(%s, %s, %s\)\)$`,
+		wordRegex, floatRegex, floatRegex, floatRegex, floatRegex, floatRegex, floatRegex),
+		assignMaterialPatternStripes)
 }
 
 func createMaterial(m string) {
@@ -97,6 +105,14 @@ func materialLighting(res, m, light, pos, eyev, normalv string) {
 	materialLightingWithShadowFlag(res, m, light, pos, eyev, normalv, "false")
 }
 
+func materialLightingPosLiteral(res, m, light string, posX, posY, posZ float64,
+	eyev, normalv, inShadow string) {
+
+	pos := "lighting position"
+	tuples[pos] = tuple.Point(posX, posY, posZ)
+	materialLightingWithShadowFlag(res, m, light, pos, eyev, normalv, inShadow)
+}
+
 func materialLightingWithShadowFlag(res, m, light, pos, eyev, normalv, inShadow string) {
 	tuples[res] = materials[m].Lighting(
 		lights[light],
@@ -105,4 +121,9 @@ func materialLightingWithShadowFlag(res, m, light, pos, eyev, normalv, inShadow 
 		tuples[normalv],
 		stringVals[inShadow] == "true",
 	)
+}
+
+func assignMaterialPatternStripes(m string, r0, g0, b0, r1, g1, b1 float64) {
+	materials[m].Pattern = material.StripePattern(tuple.Color(r0, g0, b0),
+		tuple.Color(r1, g1, b1))
 }

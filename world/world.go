@@ -6,7 +6,6 @@ import (
 	"github.com/nicholasblaskey/raytracer/intersection"
 	"github.com/nicholasblaskey/raytracer/light"
 	"github.com/nicholasblaskey/raytracer/ray"
-	"github.com/nicholasblaskey/raytracer/shape"
 	"github.com/nicholasblaskey/raytracer/tuple"
 )
 
@@ -22,9 +21,7 @@ func New() *World {
 func (w *World) Intersect(r ray.Ray) []*intersection.Intersection {
 	var intersections []*intersection.Intersection
 	for _, obj := range w.Objects {
-		// TODO figure out objects interface
-		s := obj.(*shape.Sphere)
-		intersections = append(intersections, s.Intersections(r)...)
+		intersections = append(intersections, obj.Intersections(r)...)
 	}
 
 	sort.Slice(intersections, func(i, j int) bool {
@@ -42,12 +39,13 @@ func (w *World) ShadeHit(comps *intersection.Computations) tuple.Tuple {
 }
 
 func (w *World) ColorAt(r ray.Ray) tuple.Tuple {
-	intersections := w.Intersect(r)
-	if intersections == nil {
+	inter := intersection.Hit(w.Intersect(r))
+
+	if inter == nil {
 		return tuple.Color(0.0, 0.0, 0.0)
 	}
 
-	comps := intersection.Hit(intersections).PrepareComputations(r)
+	comps := inter.PrepareComputations(r)
 
 	return w.ShadeHit(comps)
 }

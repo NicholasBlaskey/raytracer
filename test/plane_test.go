@@ -19,6 +19,11 @@ func planeSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^%s ← plane\(\)$`, wordRegex), createPlane)
 	ctx.Step(fmt.Sprintf(`^%s ← local_normal_at\(%s, point\(%s, %s, %s\)\)$`,
 		wordRegex, wordRegex, floatRegex, floatRegex, floatRegex), localNormalAt)
+
+	ctx.Step(fmt.Sprintf(`^%s ← local_intersect\(%s, %s\)$`,
+		wordRegex, wordRegex, wordRegex), localIntersect)
+	ctx.Step(fmt.Sprintf(`^%s is empty$`,
+		wordRegex), intersectionsAreEmpty)
 }
 
 func createPlane(p string) {
@@ -32,4 +37,19 @@ func localNormalAt(n, p string, x, y, z float64) {
 	}
 
 	tuples[n] = shapes[p].NormalAt(tuple.Point(x, y, z))
+}
+
+func localIntersect(xs, p, r string) {
+	if shapes[p].GetTransform() != matrix.Ident4() {
+		panic("Does not support non ident transforms yet")
+	}
+
+	intersections[xs] = shapes[p].Intersections(rays[r])
+}
+
+func intersectionsAreEmpty(xs string) error {
+	if len(intersections[xs]) != 0 {
+		return fmt.Errorf("%s expected to be empty got %v", xs, intersections[xs])
+	}
+	return nil
 }

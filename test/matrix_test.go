@@ -109,6 +109,9 @@ func matrixEqual4(mat string, data *godog.Table) error {
 }
 
 func matrixEquals(m0, m1 string) error {
+	if _, ok := tuples[m1]; ok {
+		return isEqualTuple(m0, tuples[m1][0], tuples[m1][1], tuples[m1][2], tuples[m1][3])
+	}
 	if _, ok := intersectionObjects[m1]; ok { // Case of intersection comparision.
 		return intersectionEquals(m0, m1)
 	}

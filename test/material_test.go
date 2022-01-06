@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/nicholasblaskey/raytracer/material"
+	"github.com/nicholasblaskey/raytracer/shape"
 	"github.com/nicholasblaskey/raytracer/tuple"
 
 	"github.com/cucumber/godog"
@@ -115,6 +116,7 @@ func materialLightingPosLiteral(res, m, light string, posX, posY, posZ float64,
 
 func materialLightingWithShadowFlag(res, m, light, pos, eyev, normalv, inShadow string) {
 	tuples[res] = materials[m].Lighting(
+		shape.NewSphere(), // Place holder does nothing
 		lights[light],
 		tuples[pos],
 		tuples[eyev],

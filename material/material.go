@@ -26,12 +26,12 @@ func New() *Material {
 	}
 }
 
-func (m *Material) Lighting(light light.Point, point, eyev, normalv tuple.Tuple,
+func (m *Material) Lighting(object Object, light light.Point, point, eyev, normalv tuple.Tuple,
 	inShadow bool) tuple.Tuple {
 
 	col := m.Color
 	if m.Pattern != nil {
-		col = m.Pattern.At(point)
+		col = m.Pattern.AtObject(object, point)
 	}
 
 	effColor := col.ColorMul(light.Intensity)

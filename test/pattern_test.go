@@ -30,6 +30,8 @@ func patternSteps(ctx *godog.ScenarioContext) {
 		wordRegex, wordRegex, wordRegex), createGradientPattern)
 	ctx.Step(fmt.Sprintf(`^%s ← ring_pattern\(%s, %s\)$`,
 		wordRegex, wordRegex, wordRegex), createRingPattern)
+	ctx.Step(fmt.Sprintf(`^%s ← checkers_pattern\(%s, %s\)$`,
+		wordRegex, wordRegex, wordRegex), createCheckerPattern)
 
 	ctx.Step(fmt.Sprintf(`^%s.(a|b) = %s$`,
 		wordRegex, wordRegex), stripePatternColEqual)
@@ -99,6 +101,10 @@ func createGradientPattern(p, c0, c1 string) {
 
 func createRingPattern(p, c0, c1 string) {
 	patterns[p] = material.RingPattern(tuples[c0], tuples[c1])
+}
+
+func createCheckerPattern(p, c0, c1 string) {
+	patterns[p] = material.CheckerPattern(tuples[c0], tuples[c1])
 }
 
 type TestPattern struct {

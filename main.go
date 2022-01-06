@@ -282,8 +282,8 @@ func main() {
 
 // Draw scene with a plane
 func main() {
-	n := 600
-	pattern := material.RingPattern(
+	n := 200
+	pattern := material.CheckerPattern(
 		tuple.Color(0.7, 0.3, 0.3),
 		tuple.Color(0.3, 0.3, 0.7),
 	)
@@ -294,7 +294,7 @@ func main() {
 			tuple.Color(0.3, 0.3, 0.7),
 		)
 	*/
-	pattern.SetTransform(matrix.Scale(0.01, 0.01, 0.01))
+	pattern.SetTransform(matrix.Scale(0.1, 0.1, 0.1))
 
 	floor := shape.NewPlane()
 	floor.Material.Color = tuple.Color(1.0, 0.9, 0.9)

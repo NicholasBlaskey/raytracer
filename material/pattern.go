@@ -116,3 +116,32 @@ func (s *Ring) At(p tuple.Tuple) tuple.Tuple {
 func (s *Ring) AtObject(obj Object, worldPoint tuple.Tuple) tuple.Tuple {
 	return s.At(WorldToPattern(s, obj, worldPoint))
 }
+
+type Checker struct {
+	Color1    tuple.Tuple
+	Color2    tuple.Tuple
+	Transform matrix.Mat4
+}
+
+func CheckerPattern(c1, c2 tuple.Tuple) *Checker {
+	return &Checker{c1, c2, matrix.Ident4()}
+}
+
+func (s *Checker) GetTransform() matrix.Mat4 {
+	return s.Transform
+}
+
+func (s *Checker) SetTransform(m matrix.Mat4) {
+	s.Transform = m
+}
+
+func (s *Checker) At(p tuple.Tuple) tuple.Tuple {
+	if int(math.Abs(p[0])+math.Abs(p[1])+math.Abs(p[2]))%2 == 0 {
+		return s.Color1
+	}
+	return s.Color2
+}
+
+func (s *Checker) AtObject(obj Object, worldPoint tuple.Tuple) tuple.Tuple {
+	return s.At(WorldToPattern(s, obj, worldPoint))
+}

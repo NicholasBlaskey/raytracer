@@ -25,7 +25,7 @@ func TestFeatures(t *testing.T) {
 
 		Options: &godog.Options{
 			Format:   "pretty", //"progress", // pretty
-			Paths:    []string{"../features"},
+			Paths:    []string{"../features/plane.feature"},
 			TestingT: t, // Testing instance that will run subtests.
 			// Stops on the first failure
 			//StopOnFailure: true,
@@ -51,6 +51,7 @@ func initializeScenario(ctx *godog.ScenarioContext) {
 		worldBefore(ctx, sc)
 		cameraBefore(ctx, sc)
 		shapeBefore(ctx, sc)
+		planeBefore(ctx, sc)
 
 		return ctx, nil
 	})
@@ -67,4 +68,5 @@ func initializeScenario(ctx *godog.ScenarioContext) {
 	worldSteps(ctx)
 	cameraSteps(ctx)
 	shapeSteps(ctx)
+	planeSteps(ctx)
 }

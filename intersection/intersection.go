@@ -73,6 +73,7 @@ type Computations struct {
 	OverPoint tuple.Tuple
 	Eyev      tuple.Tuple
 	Normalv   tuple.Tuple
+	Reflectv  tuple.Tuple
 	Inside    bool
 }
 
@@ -91,6 +92,7 @@ func (i *Intersection) PrepareComputations(r ray.Ray) *Computations {
 	}
 
 	c.OverPoint = c.Point.Add(c.Normalv.Mul(EPSILON))
+	c.Reflectv = r.Direction.Reflect(c.Normalv)
 
 	return c
 }

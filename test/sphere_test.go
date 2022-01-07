@@ -26,7 +26,7 @@ func sphereBefore(ctx context.Context, sc *godog.Scenario) (context.Context, err
 
 func sphereSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^%s ← sphere\(\)$`, wordRegex), createSphere)
-	ctx.Step(fmt.Sprintf(`^%s ← sphere\(\) with:$`, wordRegex), createSphereWith)
+	ctx.Step(fmt.Sprintf(`^%s ← (sphere|plane)\(\) with:$`, wordRegex), createShapeWith)
 	ctx.Step(fmt.Sprintf(`^%s ← intersect\(%s, %s\)$`,
 		wordRegex, wordRegex, wordRegex), intersectSphere)
 
@@ -189,8 +189,13 @@ func parseFloatList(list string) ([]float64, error) {
 	return floats, nil
 }
 
-func createSphereWith(s string, data *godog.Table) error {
-	sph := shape.NewSphere()
+func createShapeWith(s, shapeType string, data *godog.Table) error {
+	var sph intersection.Intersectable
+	if shapeType == "sphere" {
+		sph = shape.NewSphere()
+	} else if shapeType == "plane" {
+		sph = shape.NewPlane()
+	}
 
 	for _, row := range data.Rows {
 		k, v := row.Cells[0].Value, row.Cells[1].Value
@@ -200,21 +205,28 @@ func createSphereWith(s string, data *godog.Table) error {
 			if err != nil {
 				panic(err)
 			}
-			sph.Material.Color = tuple.Color(col[0], col[1], col[2])
+			sph.GetMaterial().Color = tuple.Color(col[0], col[1], col[2])
 		case "material.diffuse":
 			diff, err := strconv.ParseFloat(v, 64)
 			if err != nil {
 				panic(err)
 			}
 
-			sph.Material.Diffuse = diff
+			sph.GetMaterial().Diffuse = diff
 		case "material.specular":
 			spec, err := strconv.ParseFloat(v, 64)
 			if err != nil {
 				panic(err)
 			}
 
-			sph.Material.Specular = spec
+			sph.GetMaterial().Specular = spec
+		case "material.reflective":
+			r, err := strconv.ParseFloat(v, 64)
+			if err != nil {
+				panic(err)
+			}
+
+			sph.GetMaterial().Reflective = r
 		case "transform":
 			vals, err := parseFloatList(v)
 			if err != nil {
@@ -222,9 +234,9 @@ func createSphereWith(s string, data *godog.Table) error {
 			}
 
 			if strings.Contains(v, "scaling") {
-				sph.Transform = matrix.Scale(vals[0], vals[1], vals[2])
+				sph.SetTransform(matrix.Scale(vals[0], vals[1], vals[2]))
 			} else if strings.Contains(v, "translation") {
-				sph.Transform = matrix.Translate(vals[0], vals[1], vals[2])
+				sph.SetTransform(matrix.Translate(vals[0], vals[1], vals[2]))
 			} else if false { // TODO add more matrices here
 
 			} else {

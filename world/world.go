@@ -50,6 +50,17 @@ func (w *World) ColorAt(r ray.Ray) tuple.Tuple {
 	return w.ShadeHit(comps)
 }
 
+func (w *World) ReflectedColor(comps *intersection.Computations) tuple.Tuple {
+	if comps.Obj.GetMaterial().Reflective == 0 {
+		return tuple.Color(0.0, 0.0, 0.0)
+	}
+
+	reflectRay := ray.New(comps.OverPoint, comps.Reflectv)
+	c := w.ColorAt(reflectRay)
+
+	return c.Mul(comps.Obj.GetMaterial().Reflective)
+}
+
 func (w *World) IsShadowed(p tuple.Tuple) bool {
 	v := w.Light.Position.Sub(p)
 	distance := v.Magnitude()

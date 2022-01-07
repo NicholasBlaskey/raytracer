@@ -48,7 +48,7 @@ func intersectionSteps(ctx *godog.ScenarioContext) {
 		computationInsideEquals)
 	ctx.Step(fmt.Sprintf(`^%s.object = %s.object$`,
 		wordRegex, wordRegex), computationsObjectEquals)
-	ctx.Step(fmt.Sprintf(`^%s.(point|eyev|normalv) = (point|vector)\(%s, %s, %s\)$`,
+	ctx.Step(fmt.Sprintf(`^%s.(point|eyev|normalv|reflectv) = (point|vector)\(%s, %s, %s\)$`,
 		wordRegex, floatRegex, floatRegex, floatRegex), computationsTupleEquals)
 
 	ctx.Step(fmt.Sprintf(`^%s.over_point.(x|y|z) < -EPSILON/2$`, wordRegex),
@@ -135,6 +135,8 @@ func computationsTupleEquals(comp, component, vectorOrPoint string, x, y, z floa
 		tuples[actual] = computations[comp].Eyev
 	case "normalv":
 		tuples[actual] = computations[comp].Normalv
+	case "reflectv":
+		tuples[actual] = computations[comp].Reflectv
 	}
 
 	w := 1.0

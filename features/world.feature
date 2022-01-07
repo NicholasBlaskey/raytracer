@@ -102,3 +102,25 @@ Scenario: shade_hit() is given an intersection in shadow
   When comps ← prepare_computations(i, r)
     And c ← shade_hit(w, comps)
   Then c = color(0.1, 0.1, 0.1)
+
+Scenario: The reflected color for a nonreflective material
+  Given w ← default_world()
+    And r ← ray(point(0.0, 0.0, 0.0), vector(0.0, 0.0, 1.0))
+    And shape ← the second object in w
+    And shape.material.ambient ← 1.0
+    And i ← intersection(1.0, shape)
+  When comps ← prepare_computations(i, r)
+    And color ← reflected_color(w, comps)
+  Then color = color(0.0, 0.0, 0.0)
+
+Scenario: The reflected color for a reflective material
+  Given w ← default_world()
+    And shape ← plane() with:                 
+      | material.reflective | 0.5                   |
+      | transform           | translation(0, -1, 0) |   
+    And shape is added to w
+    And r ← ray(point(0.0, 0.0, -3.0), vector(0.0, -0.70710678118, 0.70710678118))
+    And i ← intersection(1.41421356237, shape)
+  When comps ← prepare_computations(i, r)
+    And color ← reflected_color(w, comps)
+  Then color = color(0.190331, 0.237913, 0.142748)

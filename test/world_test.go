@@ -51,6 +51,8 @@ func worldSteps(ctx *godog.ScenarioContext) {
 
 	ctx.Step(fmt.Sprintf(`^is_shadowed\(%s, %s\) is (true|false)$`,
 		wordRegex, wordRegex), isShadowed)
+	ctx.Step(fmt.Sprintf(`^%s ← reflected_color\(%s, %s\)$`,
+		wordRegex, wordRegex, wordRegex), worldReflectedColor)
 }
 
 func createWorld(w string) {
@@ -148,6 +150,10 @@ func shadeHit(res, w, comps string) {
 
 func worldColorAt(res, w, r string) {
 	tuples[res] = worlds[w].ColorAt(rays[r])
+}
+
+func worldReflectedColor(res, w, comps string) {
+	tuples[res] = worlds[w].ReflectedColor(computations[comps])
 }
 
 func setObjectAmbientTo(obj string, v float64) {

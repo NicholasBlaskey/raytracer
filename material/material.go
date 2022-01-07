@@ -8,12 +8,13 @@ import (
 )
 
 type Material struct {
-	Color     tuple.Tuple
-	Ambient   float64
-	Diffuse   float64
-	Specular  float64
-	Shininess float64
-	Pattern   Pattern
+	Color      tuple.Tuple
+	Ambient    float64
+	Diffuse    float64
+	Specular   float64
+	Shininess  float64
+	Pattern    Pattern
+	Reflective float64
 }
 
 func New() *Material {

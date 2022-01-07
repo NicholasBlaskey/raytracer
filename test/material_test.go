@@ -25,13 +25,13 @@ func materialBefore(ctx context.Context, sc *godog.Scenario) (context.Context, e
 func materialSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^%s ← material\(\)$`,
 		wordRegex), createMaterial)
-	ctx.Step(fmt.Sprintf(`^%s\.(ambient|diffuse|specular|shininess) ← %s`,
+	ctx.Step(fmt.Sprintf(`^%s\.(ambient|diffuse|specular|shininess|reflective) ← %s`,
 		wordRegex, wordRegex), assignMaterialComponenent)
 
 	ctx.Step(fmt.Sprintf(`^%s ← (true|false)$`, wordRegex),
 		assignBooleanString)
 
-	ctx.Step(fmt.Sprintf(`^%s\.(ambient|diffuse|specular|shininess) = %s$`,
+	ctx.Step(fmt.Sprintf(`^%s\.(ambient|diffuse|specular|shininess|reflective) = %s$`,
 		wordRegex, floatRegex), materialComponentEqual)
 	ctx.Step(fmt.Sprintf(`^%s\.color = color\(%s, %s, %s\)$`,
 		wordRegex, floatRegex, floatRegex, floatRegex), materialColorEqual)
@@ -66,6 +66,8 @@ func materialComponentEqual(m, component string, expected float64) error {
 		actual = materials[m].Specular
 	case "shininess":
 		actual = materials[m].Shininess
+	case "reflective":
+		actual = materials[m].Reflective
 	default:
 		panic("SHOULDNT happen!")
 	}
@@ -86,6 +88,8 @@ func assignMaterialComponenent(m, component string, v float64) {
 		materials[m].Specular = v
 	case "shininess":
 		materials[m].Shininess = v
+	case "reflective":
+		materials[m].Reflective = v
 	default:
 		panic("SHOULDNT happen!")
 	}

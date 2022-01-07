@@ -1,6 +1,8 @@
 package material
 
 import (
+	"fmt"
+
 	"math"
 
 	"github.com/nicholasblaskey/raytracer/matrix"
@@ -80,12 +82,16 @@ func (s *Gradient) SetTransform(m matrix.Mat4) {
 // The pattern only goes half way across the sphere for some reaosn.a
 func (s *Gradient) At(p tuple.Tuple) tuple.Tuple {
 	dist := s.Color2.Sub(s.Color1)
-	fraction := p[0] - math.Floor(p[0])
+	//fraction := p[0] - math.Floor(p[0])
+	fraction := p[0] - float64(int(p[0]))
 	return s.Color1.Add(dist.Mul(fraction))
 }
 
 func (s *Gradient) AtObject(obj Object, worldPoint tuple.Tuple) tuple.Tuple {
-	return s.At(WorldToPattern(s, obj, worldPoint))
+	// TODO consider gradient pattern more
+	p := WorldToPattern(s, obj, worldPoint)
+
+	return s.At(p.Add(tuple.Vector(1.0, 1.0, 1.0)).Mul(1.0 / 2.0))
 }
 
 type Ring struct {
@@ -135,8 +141,21 @@ func (s *Checker) SetTransform(m matrix.Mat4) {
 	s.Transform = m
 }
 
+func floor(x float64) float64 {
+	// TODO look into this. There is weird floating point causing
+	// some achne on checkerboard pattern.
+	const epsilon = 0.00000000001
+	if x < epsilon && x > -epsilon {
+		x = 0.0
+	}
+
+	return math.Floor(x)
+}
+
 func (s *Checker) At(p tuple.Tuple) tuple.Tuple {
-	if int(math.Abs(p[0])+math.Abs(p[1])+math.Abs(p[2]))%2 == 0 {
+	fmt.Println(p)
+	//if int(math.Floor(p[0])+math.Floor(p[1])+math.Floor(p[2]))%2 == 0 {
+	if int(floor(p[0])+floor(p[1])+floor(p[2]))%2 == 0 {
 		return s.Color1
 	}
 	return s.Color2

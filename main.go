@@ -282,29 +282,26 @@ func main() {
 
 // Draw scene with a plane
 func main() {
-	n := 200
-	pattern := material.CheckerPattern(
+	n := 100
+	checker := material.CheckerPattern(
+		tuple.Color(1.0, 1.0, 1.0),
+		tuple.Color(0.0, 0.0, 0.0),
+	)
+
+	pattern := material.GradientPattern(
 		tuple.Color(0.7, 0.3, 0.3),
 		tuple.Color(0.3, 0.3, 0.7),
 	)
 
-	/*
-		pattern := material.GradientPattern(
-			tuple.Color(0.7, 0.3, 0.3),
-			tuple.Color(0.3, 0.3, 0.7),
-		)
-	*/
-	pattern.SetTransform(matrix.Scale(0.1, 0.1, 0.1))
-
 	floor := shape.NewPlane()
 	floor.Material.Color = tuple.Color(1.0, 0.9, 0.9)
 	floor.Material.Specular = 0.0
-	floor.Material.Pattern = pattern
+	floor.Material.Pattern = checker
 
 	leftWall := shape.NewPlane()
 	leftWall.Transform = matrix.Translate(0.0, 0.0, 2.0).Mul4(
 		matrix.RotateX(math.Pi / 2))
-	leftWall.Material.Pattern = pattern
+	leftWall.Material.Pattern = checker
 
 	middle := shape.NewSphere()
 	middle.Transform = matrix.Translate(-0.5, 2.0, 0.5)
@@ -333,7 +330,8 @@ func main() {
 	l := light.NewPointLight(tuple.Point(-10.0, 1.0, -10.0),
 		tuple.Color(1.0, 1.0, 1.0))
 	w.Light = &l
-	w.Objects = append(w.Objects, leftWall, floor, middle, right, left)
+	w.Objects = append(w.Objects, middle, left, right, floor, leftWall)
+	//w.Objects = append(w.Objects, middle)
 
 	c := camera.New(n*2, n, math.Pi/3.0)
 	c.Transform = matrix.View(

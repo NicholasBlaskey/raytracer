@@ -124,3 +124,8 @@ Scenario: A sphere may be assigned a material
     And z ← s.material
     And z.ambient = 1.0
   
+Scenario: A helper for producing a sphere with a glassy material
+  Given s ← glass_sphere()
+  Then s.transform = identity_matrix
+    And s.material.transparency = 1.0
+    And s.material.refractive_index = 1.5

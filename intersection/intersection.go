@@ -74,11 +74,13 @@ type Computations struct {
 	Eyev      tuple.Tuple
 	Normalv   tuple.Tuple
 	Reflectv  tuple.Tuple
+	N1        float64
+	N2        float64
 	Inside    bool
 }
 
 // TODO add multiple light sources here
-func (i *Intersection) PrepareComputations(r ray.Ray) *Computations {
+func (i *Intersection) PrepareComputations(r ray.Ray, xs []*Intersection) *Computations {
 	c := &Computations{T: i.T, Obj: i.Obj}
 
 	c.Point = r.PositionAt(c.T)

@@ -56,6 +56,15 @@ func intersectionSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^%s.point.(x|y|z) > %s.over_point.(x|y|z)$`,
 		wordRegex, wordRegex), pointBiggerThanOverPoint)
 
+	// TODO unhard code this test
+	ctx.Step(`^xs ← intersections\(2.0:A, 2.75:B, 3.25:C, 4.75:B, 5.25:C, 6:A\)$`,
+		aggregateIntersectionsVariousIntersections)
+
+	ctx.Step(fmt.Sprintf(`^%s.(n1|n2) = %s$`, wordRegex, floatRegex),
+		n1OrN2Equal)
+	ctx.Step(fmt.Sprintf(`^%s ← prepare_computations\(%s\[%s\], %s, %s\)$`,
+		wordRegex, wordRegex, intRegex, wordRegex, wordRegex),
+		prepareComputationsXSs)
 }
 
 func intersectionCreate(i string, t float64, obj string) {
@@ -86,6 +95,18 @@ func aggregateIntersections4(res, i0, i1, i2, i3 string) {
 		intersectionObjects[i1], intersectionObjects[i2], intersectionObjects[i3])
 }
 
+// TODO improve this since we are hard coding this for now.
+func aggregateIntersectionsVariousIntersections() {
+	intersections["xs"] = intersection.Aggregate(
+		&intersection.Intersection{2.0, shapes["A"]},
+		&intersection.Intersection{2.75, shapes["B"]},
+		&intersection.Intersection{3.25, shapes["C"]},
+		&intersection.Intersection{4.75, shapes["B"]},
+		&intersection.Intersection{5.25, shapes["C"]},
+		&intersection.Intersection{6.0, shapes["A"]},
+	)
+}
+
 func intersectionCreateHit(hit, i string) {
 	intersectionObjects[hit] = intersection.Hit(intersections[i])
 }
@@ -106,7 +127,7 @@ func intersectionEquals(i0, i1 string) error {
 }
 
 func intersectionsPrepareComputations(res, i, r string) {
-	computations[res] = intersectionObjects[i].PrepareComputations(rays[r])
+	computations[res] = intersectionObjects[i].PrepareComputations(rays[r], nil)
 }
 
 func computationsTimeEquals(comp, i string) error {
@@ -185,4 +206,21 @@ func pointBiggerThanOverPoint(comp, xyz string) error {
 			comp, xyz, p, over, comp, xyz)
 	}
 	return nil
+}
+
+func n1OrN2Equal(comp, n1OrN2 string, expected float64) error {
+	actual := computations[comp].N1
+	if n1OrN2 == "n2" {
+		actual = computations[comp].N2
+	}
+
+	if actual != expected {
+		return fmt.Errorf("%s.%s expected %f got %f", comp, n1OrN2, expected, actual)
+	}
+	return nil
+}
+
+func prepareComputationsXSs(res, xs string, index int, r, intersects string) {
+	computations[res] = intersections[xs][index].PrepareComputations(
+		rays[r], intersections[intersects])
 }

@@ -13,6 +13,8 @@ import (
 	"github.com/cucumber/godog"
 )
 
+const maxDepth = 5
+
 var worlds map[string]*world.World
 
 func worldBefore(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
@@ -53,6 +55,11 @@ func worldSteps(ctx *godog.ScenarioContext) {
 		wordRegex, wordRegex), isShadowed)
 	ctx.Step(fmt.Sprintf(`^%s ← reflected_color\(%s, %s\)$`,
 		wordRegex, wordRegex, wordRegex), worldReflectedColor)
+	ctx.Step(fmt.Sprintf(`^%s ← reflected_color\(%s, %s, %s\)$`,
+		wordRegex, wordRegex, wordRegex, intRegex), worldReflectedColorDepthLimit)
+
+	ctx.Step(fmt.Sprintf(`^color_at\(%s, %s\) should terminate successfully$`,
+		wordRegex, wordRegex), colorAtShouldHault)
 }
 
 func createWorld(w string) {
@@ -145,15 +152,23 @@ func theNthObjectFromWorld(res, nth, w string) {
 }
 
 func shadeHit(res, w, comps string) {
-	tuples[res] = worlds[w].ShadeHit(computations[comps])
+	tuples[res] = worlds[w].ShadeHit(computations[comps], maxDepth)
+}
+
+func colorAtShouldHault(w, r string) {
+	worlds[w].ColorAt(rays[r], 5)
 }
 
 func worldColorAt(res, w, r string) {
-	tuples[res] = worlds[w].ColorAt(rays[r])
+	tuples[res] = worlds[w].ColorAt(rays[r], maxDepth)
 }
 
 func worldReflectedColor(res, w, comps string) {
-	tuples[res] = worlds[w].ReflectedColor(computations[comps])
+	tuples[res] = worlds[w].ReflectedColor(computations[comps], maxDepth)
+}
+
+func worldReflectedColorDepthLimit(res, w, comps string, limit int) {
+	tuples[res] = worlds[w].ReflectedColor(computations[comps], limit)
 }
 
 func setObjectAmbientTo(obj string, v float64) {

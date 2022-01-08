@@ -26,7 +26,8 @@ func sphereBefore(ctx context.Context, sc *godog.Scenario) (context.Context, err
 
 func sphereSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^%s ← sphere\(\)$`, wordRegex), createSphere)
-	ctx.Step(fmt.Sprintf(`^%s ← (sphere|plane)\(\) with:$`, wordRegex), createShapeWith)
+	ctx.Step(fmt.Sprintf(`^%s ← glass_sphere\(\)$`, wordRegex), createGlassSphere)
+	ctx.Step(fmt.Sprintf(`^%s ← (sphere|plane|glass_sphere)\(\) with:$`, wordRegex), createShapeWith)
 	ctx.Step(fmt.Sprintf(`^%s ← intersect\(%s, %s\)$`,
 		wordRegex, wordRegex, wordRegex), intersectSphere)
 
@@ -58,10 +59,17 @@ func sphereSteps(ctx *godog.ScenarioContext) {
 		assignSphereMaterial)
 	ctx.Step(fmt.Sprintf(`^%s.material = %s$`, wordRegex, wordRegex),
 		sphereMaterialEqual)
+	ctx.Step(fmt.Sprintf(`^%s.material.(transparency|refractive_index) = %s$`,
+		wordRegex, floatRegex), sphereMaterialRefractiveComponenetEqual)
+
 }
 
 func createSphere(s string) {
 	shapes[s] = shape.NewSphere()
+}
+
+func createGlassSphere(s string) {
+	shapes[s] = shape.NewGlassSphere()
 }
 
 func intersectSphere(intersection, s, r string) {
@@ -195,6 +203,8 @@ func createShapeWith(s, shapeType string, data *godog.Table) error {
 		sph = shape.NewSphere()
 	} else if shapeType == "plane" {
 		sph = shape.NewPlane()
+	} else if shapeType == "glass_sphere" {
+		sph = shape.NewGlassSphere()
 	}
 
 	for _, row := range data.Rows {
@@ -227,6 +237,13 @@ func createShapeWith(s, shapeType string, data *godog.Table) error {
 			}
 
 			sph.GetMaterial().Reflective = r
+		case "material.refractive_index":
+			r, err := strconv.ParseFloat(v, 64)
+			if err != nil {
+				panic(err)
+			}
+
+			sph.GetMaterial().RefractiveIndex = r
 		case "transform":
 			vals, err := parseFloatList(v)
 			if err != nil {
@@ -250,5 +267,17 @@ func createShapeWith(s, shapeType string, data *godog.Table) error {
 
 	shapes[s] = sph
 
+	return nil
+}
+
+func sphereMaterialRefractiveComponenetEqual(s, component string, expected float64) error {
+	actual := shapes[s].GetMaterial().Transparency
+	if component == "refractive_index" {
+		actual = shapes[s].GetMaterial().RefractiveIndex
+	}
+
+	if actual != expected {
+		return fmt.Errorf("%s.material.%s expected %f got %f", s, component, expected, actual)
+	}
 	return nil
 }

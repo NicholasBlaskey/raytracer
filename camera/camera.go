@@ -12,6 +12,8 @@ import (
 	"github.com/nicholasblaskey/raytracer/world"
 )
 
+const maxDepth = 5
+
 type Camera struct {
 	HSize       int
 	VSize       int
@@ -73,7 +75,7 @@ func (c *Camera) Render(w *world.World) *canvas.Canvas {
 			bar.Add(1)
 
 			ray := c.RayForPixel(x, y)
-			color := w.ColorAt(ray)
+			color := w.ColorAt(ray, maxDepth)
 			canv.WritePixel(color, x, y)
 		}
 	}

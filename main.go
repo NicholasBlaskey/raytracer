@@ -280,6 +280,7 @@ func main() {
 }
 */
 
+/*
 // Draw scene with a plane
 func main() {
 	n := 100
@@ -331,6 +332,78 @@ func main() {
 		tuple.Color(1.0, 1.0, 1.0))
 	w.Light = &l
 	w.Objects = append(w.Objects, middle, left, right, floor, leftWall)
+	//w.Objects = append(w.Objects, middle)
+
+	c := camera.New(n*2, n, math.Pi/3.0)
+	c.Transform = matrix.View(
+		tuple.Point(0.0, 1.5, -5.0),
+		tuple.Point(0.0, 1.0, 0.0),
+		tuple.Vector(0.0, 1.0, 0.0))
+
+	canv := c.Render(w)
+	if err := canv.Save("test.ppm"); err != nil {
+		panic(err)
+	}
+
+}
+*/
+
+// Draw scene with reflection
+func main() {
+	//n := 600
+	n := 1000
+	checker := material.CheckerPattern(
+		tuple.Color(1.0, 1.0, 1.0),
+		tuple.Color(0.0, 0.0, 0.0),
+	)
+
+	stripes := material.StripePattern(
+		tuple.Color(1.0, 1.0, 1.0),
+		tuple.Color(0.0, 0.0, 0.0),
+	)
+
+	floor := shape.NewPlane()
+	floor.Material.Color = tuple.Color(1.0, 0.9, 0.9)
+	floor.Material.Specular = 0.0
+	floor.Material.Pattern = checker
+
+	leftWall := shape.NewPlane()
+	leftWall.Transform = matrix.Translate(0.0, 0.0, 2.0).Mul4(
+		matrix.RotateX(math.Pi / 2))
+	leftWall.Material.Pattern = checker
+
+	backWall := shape.NewPlane()
+	backWall.Transform = matrix.Translate(0.0, 0.0, -12.0).Mul4(
+		matrix.RotateX(math.Pi / 2))
+	backWall.Material.Pattern = stripes
+
+	middle := shape.NewSphere()
+	middle.Transform = matrix.Translate(-0.5, 2.0, 0.5)
+	middle.Material.Color = tuple.Color(1.0, 1.0, 1.0) //tuple.Color(0.1, 1.0, 0.5)
+	middle.Material.Diffuse = 0.7
+	middle.Material.Specular = 0.3
+	middle.Material.Reflective = 0.5
+
+	right := shape.NewSphere()
+	right.Transform = matrix.Translate(1.5, 0.5, -0.5).Mul4(
+		matrix.Scale(0.5, 0.5, 0.5))
+	right.Material.Color = tuple.Color(0.3, 0.3, 0.3)
+	right.Material.Diffuse = 0.7
+	right.Material.Specular = 0.3
+
+	left := shape.NewSphere()
+	left.Transform = matrix.Translate(-1.5, 0.33, -0.75).Mul4(
+		matrix.Scale(1.0, 1.0, 1.0))
+	left.Material.Color = tuple.Color(1.0, 1.0, 1.0)
+	left.Material.Diffuse = 0.7
+	left.Material.Specular = 0.3
+	left.Material.Reflective = 0.9
+
+	w := world.New()
+	l := light.NewPointLight(tuple.Point(-10.0, 10.0, -10.0),
+		tuple.Color(1.0, 1.0, 1.0))
+	w.Light = &l
+	w.Objects = append(w.Objects, middle, left, right, floor, leftWall, backWall)
 	//w.Objects = append(w.Objects, middle)
 
 	c := camera.New(n*2, n, math.Pi/3.0)

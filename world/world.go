@@ -32,31 +32,36 @@ func (w *World) Intersect(r ray.Ray) []*intersection.Intersection {
 	return intersections
 }
 
-func (w *World) ShadeHit(comps *intersection.Computations) tuple.Tuple {
+func (w *World) ShadeHit(comps *intersection.Computations, remaining int) tuple.Tuple {
 	inShadow := w.IsShadowed(comps.OverPoint)
-	return comps.Obj.GetMaterial().Lighting(
+	surface := comps.Obj.GetMaterial().Lighting(
 		comps.Obj, *w.Light, comps.Point, comps.Eyev, comps.Normalv, inShadow)
+
+	reflected := w.ReflectedColor(comps, remaining)
+
+	return surface.Add(reflected)
 }
 
-func (w *World) ColorAt(r ray.Ray) tuple.Tuple {
-	inter := intersection.Hit(w.Intersect(r))
+func (w *World) ColorAt(r ray.Ray, remaining int) tuple.Tuple {
+	xs := w.Intersect(r)
+	inter := intersection.Hit(xs)
 
 	if inter == nil {
 		return tuple.Color(0.0, 0.0, 0.0)
 	}
 
-	comps := inter.PrepareComputations(r)
+	comps := inter.PrepareComputations(r, xs)
 
-	return w.ShadeHit(comps)
+	return w.ShadeHit(comps, remaining)
 }
 
-func (w *World) ReflectedColor(comps *intersection.Computations) tuple.Tuple {
-	if comps.Obj.GetMaterial().Reflective == 0 {
+func (w *World) ReflectedColor(comps *intersection.Computations, remaining int) tuple.Tuple {
+	if remaining <= 0 || comps.Obj.GetMaterial().Reflective == 0 {
 		return tuple.Color(0.0, 0.0, 0.0)
 	}
 
 	reflectRay := ray.New(comps.OverPoint, comps.Reflectv)
-	c := w.ColorAt(reflectRay)
+	c := w.ColorAt(reflectRay, remaining-1)
 
 	return c.Mul(comps.Obj.GetMaterial().Reflective)
 }

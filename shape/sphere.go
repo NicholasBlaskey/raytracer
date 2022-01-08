@@ -19,6 +19,13 @@ func NewSphere() *Sphere {
 	return &Sphere{matrix.Ident4(), material.New()}
 }
 
+func NewGlassSphere() *Sphere {
+	m := material.New()
+	m.Transparency = 1.0
+	m.RefractiveIndex = 1.5
+	return &Sphere{matrix.Ident4(), m}
+}
+
 func (s *Sphere) localIntersections(r ray.Ray) []*intersection.Intersection {
 	sphereToRay := r.Origin.Sub(tuple.Point(0.0, 0.0, 0.0))
 

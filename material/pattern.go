@@ -1,8 +1,6 @@
 package material
 
 import (
-	"fmt"
-
 	"math"
 
 	"github.com/nicholasblaskey/raytracer/matrix"
@@ -153,8 +151,6 @@ func floor(x float64) float64 {
 }
 
 func (s *Checker) At(p tuple.Tuple) tuple.Tuple {
-	fmt.Println(p)
-	//if int(math.Floor(p[0])+math.Floor(p[1])+math.Floor(p[2]))%2 == 0 {
 	if int(floor(p[0])+floor(p[1])+floor(p[2]))%2 == 0 {
 		return s.Color1
 	}

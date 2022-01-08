@@ -25,13 +25,13 @@ func materialBefore(ctx context.Context, sc *godog.Scenario) (context.Context, e
 func materialSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^%s ← material\(\)$`,
 		wordRegex), createMaterial)
-	ctx.Step(fmt.Sprintf(`^%s\.(ambient|diffuse|specular|shininess|reflective) ← %s`,
+	ctx.Step(fmt.Sprintf(`^%s\.(transparency|refractive_index|ambient|diffuse|specular|shininess|reflective) ← %s`,
 		wordRegex, wordRegex), assignMaterialComponenent)
 
 	ctx.Step(fmt.Sprintf(`^%s ← (true|false)$`, wordRegex),
 		assignBooleanString)
 
-	ctx.Step(fmt.Sprintf(`^%s\.(ambient|diffuse|specular|shininess|reflective) = %s$`,
+	ctx.Step(fmt.Sprintf(`^%s\.(transparency|refractive_index|ambient|diffuse|specular|shininess|reflective) = %s$`,
 		wordRegex, floatRegex), materialComponentEqual)
 	ctx.Step(fmt.Sprintf(`^%s\.color = color\(%s, %s, %s\)$`,
 		wordRegex, floatRegex, floatRegex, floatRegex), materialColorEqual)
@@ -68,6 +68,10 @@ func materialComponentEqual(m, component string, expected float64) error {
 		actual = materials[m].Shininess
 	case "reflective":
 		actual = materials[m].Reflective
+	case "transparency":
+		actual = materials[m].Transparency
+	case "refractive_index":
+		actual = materials[m].RefractiveIndex
 	default:
 		panic("SHOULDNT happen!")
 	}
@@ -90,6 +94,10 @@ func assignMaterialComponenent(m, component string, v float64) {
 		materials[m].Shininess = v
 	case "reflective":
 		materials[m].Reflective = v
+	case "transparency":
+		materials[m].Transparency = v
+	case "refractive_index":
+		materials[m].RefractiveIndex = v
 	default:
 		panic("SHOULDNT happen!")
 	}

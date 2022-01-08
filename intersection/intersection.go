@@ -96,5 +96,39 @@ func (i *Intersection) PrepareComputations(r ray.Ray, xs []*Intersection) *Compu
 	c.OverPoint = c.Point.Add(c.Normalv.Mul(EPSILON))
 	c.Reflectv = r.Direction.Reflect(c.Normalv)
 
+	var containers []Intersectable
+	for _, inter := range xs {
+		if inter == i {
+			if len(containers) == 0 {
+				c.N1 = 1.0
+			} else {
+				c.N1 = containers[len(containers)-1].GetMaterial().RefractiveIndex
+			}
+		}
+
+		// If containers has inter.Obj then add inter.Obj to containers
+		// otherwise remove it.
+		found := false
+		for j, obj := range containers {
+			if obj == inter.Obj {
+				containers[j] = containers[len(containers)-1]
+				containers = containers[:len(containers)-1]
+				found = true
+			}
+		}
+		if !found {
+			containers = append(containers, inter.Obj)
+		}
+
+		if inter == i {
+			if len(containers) == 0 {
+				c.N2 = 1.0
+			} else {
+				c.N2 = containers[len(containers)-1].GetMaterial().RefractiveIndex
+			}
+			break
+		}
+	}
+
 	return c
 }

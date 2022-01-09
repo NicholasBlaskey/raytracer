@@ -228,6 +228,13 @@ func setShapeProperties(s string, data *godog.Table) error {
 				panic(err)
 			}
 			sph.GetMaterial().Color = tuple.Color(col[0], col[1], col[2])
+		case "material.ambient":
+			a, err := strconv.ParseFloat(v, 64)
+			if err != nil {
+				panic(err)
+			}
+
+			sph.GetMaterial().Ambient = a
 		case "material.diffuse":
 			diff, err := strconv.ParseFloat(v, 64)
 			if err != nil {
@@ -278,7 +285,12 @@ func setShapeProperties(s string, data *godog.Table) error {
 			} else {
 				return fmt.Errorf("Unexpected transform type of %s", v)
 			}
-
+		case "material.pattern":
+			if v != "test_pattern()" {
+				return fmt.Errorf("Unexpected pattern of %s", v)
+			}
+			createTestPattern("test_pattern()")
+			sph.GetMaterial().Pattern = patterns["test_pattern()"]
 		default:
 			panic("Unexpected sphere with type of key=" + k + " value=" + v)
 		}

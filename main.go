@@ -351,7 +351,7 @@ func main() {
 // Draw scene with reflection
 func main() {
 	//n := 600
-	n := 1000
+	n := 100
 	checker := material.CheckerPattern(
 		tuple.Color(1.0, 1.0, 1.0),
 		tuple.Color(0.0, 0.0, 0.0),
@@ -368,7 +368,7 @@ func main() {
 	floor.Material.Pattern = checker
 
 	leftWall := shape.NewPlane()
-	leftWall.Transform = matrix.Translate(0.0, 0.0, 2.0).Mul4(
+	leftWall.Transform = matrix.Translate(0.0, 0.0, 10.0).Mul4(
 		matrix.RotateX(math.Pi / 2))
 	leftWall.Material.Pattern = checker
 
@@ -377,34 +377,26 @@ func main() {
 		matrix.RotateX(math.Pi / 2))
 	backWall.Material.Pattern = stripes
 
-	middle := shape.NewSphere()
-	middle.Transform = matrix.Translate(-0.5, 2.0, 0.5)
-	middle.Material.Color = tuple.Color(1.0, 1.0, 1.0) //tuple.Color(0.1, 1.0, 0.5)
-	middle.Material.Diffuse = 0.7
-	middle.Material.Specular = 0.3
-	middle.Material.Reflective = 0.5
-
-	right := shape.NewSphere()
-	right.Transform = matrix.Translate(1.5, 0.5, -0.5).Mul4(
-		matrix.Scale(0.5, 0.5, 0.5))
-	right.Material.Color = tuple.Color(0.3, 0.3, 0.3)
-	right.Material.Diffuse = 0.7
-	right.Material.Specular = 0.3
-
-	left := shape.NewSphere()
-	left.Transform = matrix.Translate(-1.5, 0.33, -0.75).Mul4(
+	glass := shape.NewGlassSphere()
+	glass.Transform = matrix.Translate(-0.5, 1.0, -1.0).Mul4(
 		matrix.Scale(1.0, 1.0, 1.0))
-	left.Material.Color = tuple.Color(1.0, 1.0, 1.0)
-	left.Material.Diffuse = 0.7
-	left.Material.Specular = 0.3
-	left.Material.Reflective = 0.9
+	//glass.Material.Color = tuple.Color(1.0, 1.0, 1.0) //tuple.Color(0.1, 1.0, 0.5)
+	//glass.Material.Diffuse = 0.7
+	//glass.Material.Specular = 0.3
+	//glass.Material.Reflective = 0.5
+
+	air := shape.NewSphere()
+	air.Transform = matrix.Translate(-0.5, 1.0, -1.0).Mul4(
+		matrix.Scale(0.3, 0.3, 0.3))
+	air.Material.Color = tuple.Color(1.0, 1.0, 1.0)
+	air.Material.RefractiveIndex = 1.02
+	air.Material.Transparency = 0.8
 
 	w := world.New()
 	l := light.NewPointLight(tuple.Point(-10.0, 10.0, -10.0),
 		tuple.Color(1.0, 1.0, 1.0))
 	w.Light = &l
-	w.Objects = append(w.Objects, middle, left, right, floor, leftWall, backWall)
-	//w.Objects = append(w.Objects, middle)
+	w.Objects = append(w.Objects, floor, glass, air, leftWall, backWall)
 
 	c := camera.New(n*2, n, math.Pi/3.0)
 	c.Transform = matrix.View(

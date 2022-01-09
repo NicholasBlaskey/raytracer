@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	epsilon    = 0.00001
+	epsilon    = 0.0001
 	wordRegex  = `([_A-Za-z0-9^\s]+)` // TODO change this to no spaces? Why did we have no spaces?
 	intRegex   = `(\d+)`
 	floatRegex = `(\-*\d+\.\d+)`

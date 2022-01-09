@@ -42,6 +42,8 @@ func worldSteps(ctx *godog.ScenarioContext) {
 		wordRegex, wordRegex), theNthObjectFromWorld)
 	ctx.Step(fmt.Sprintf(`^%s ← shade_hit\(%s, %s\)`,
 		wordRegex, wordRegex, wordRegex), shadeHit)
+	ctx.Step(fmt.Sprintf(`^%s ← shade_hit\(%s, %s, %s\)`,
+		wordRegex, wordRegex, wordRegex, intRegex), shadeHitWithRemaining)
 
 	ctx.Step(fmt.Sprintf(`^%s.material.ambient ← %s$`,
 		wordRegex, floatRegex), setObjectAmbientTo)
@@ -155,6 +157,10 @@ func theNthObjectFromWorld(res, nth, w string) {
 
 func shadeHit(res, w, comps string) {
 	tuples[res] = worlds[w].ShadeHit(computations[comps], maxDepth)
+}
+
+func shadeHitWithRemaining(res, w, comps string, remaining int) {
+	tuples[res] = worlds[w].ShadeHit(computations[comps], remaining)
 }
 
 func colorAtShouldHault(w, r string) {

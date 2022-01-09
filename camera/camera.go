@@ -13,7 +13,10 @@ import (
 	"github.com/nicholasblaskey/raytracer/world"
 )
 
-const maxDepth = 5
+const (
+	maxDepth = 5
+	warpSize = 4
+)
 
 type Camera struct {
 	HSize       int
@@ -71,22 +74,31 @@ func (c *Camera) Render(w *world.World) *canvas.Canvas {
 	var wg sync.WaitGroup
 
 	canv := canvas.New(c.HSize, c.VSize)
-	bar := progressbar.Default(int64(canv.Width * canv.Height))
-	for y := 0; y < c.VSize; y++ {
-		wg.Add(1)
-		go func(y int) {
-			defer wg.Done()
-			for x := 0; x < c.HSize; x++ {
+	bar := progressbar.Default(int64((canv.Width * canv.Height) / (warpSize * warpSize)))
 
+	for y := 0; y < c.VSize; y += warpSize {
+		for x := 0; x < c.HSize; x += warpSize {
+			wg.Add(1)
+			go func(x, y int) {
+				defer wg.Done()
+				c.renderWarp(w, x, y, canv, bar)
 				bar.Add(1)
-
-				ray := c.RayForPixel(x, y)
-				color := w.ColorAt(ray, maxDepth)
-				canv.WritePixel(color, x, y)
-			}
-		}(y)
+			}(x, y)
+		}
 	}
 	wg.Wait()
 
 	return canv
+}
+
+func (c *Camera) renderWarp(w *world.World, x, y int, canv *canvas.Canvas,
+	bar *progressbar.ProgressBar) {
+
+	for y0 := y; y0 < y+warpSize && y0 < c.VSize; y0++ {
+		for x0 := x; x0 < x+warpSize && x0 < c.HSize; x0++ {
+			ray := c.RayForPixel(x0, y0)
+			color := w.ColorAt(ray, maxDepth)
+			canv.WritePixel(color, x0, y0)
+		}
+	}
 }

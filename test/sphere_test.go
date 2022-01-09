@@ -28,6 +28,8 @@ func sphereSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^%s ← sphere\(\)$`, wordRegex), createSphere)
 	ctx.Step(fmt.Sprintf(`^%s ← glass_sphere\(\)$`, wordRegex), createGlassSphere)
 	ctx.Step(fmt.Sprintf(`^%s ← (sphere|plane|glass_sphere)\(\) with:$`, wordRegex), createShapeWith)
+	ctx.Step(fmt.Sprintf(`^%s has:$`, wordRegex), shapeHas)
+
 	ctx.Step(fmt.Sprintf(`^%s ← intersect\(%s, %s\)$`,
 		wordRegex, wordRegex, wordRegex), intersectSphere)
 
@@ -207,6 +209,16 @@ func createShapeWith(s, shapeType string, data *godog.Table) error {
 		sph = shape.NewGlassSphere()
 	}
 
+	shapes[s] = sph
+	return setShapeProperties(s, data)
+}
+
+func shapeHas(s string, data *godog.Table) error {
+	return setShapeProperties(s, data)
+}
+
+func setShapeProperties(s string, data *godog.Table) error {
+	sph := shapes[s]
 	for _, row := range data.Rows {
 		k, v := row.Cells[0].Value, row.Cells[1].Value
 		switch k {
@@ -244,6 +256,13 @@ func createShapeWith(s, shapeType string, data *godog.Table) error {
 			}
 
 			sph.GetMaterial().RefractiveIndex = r
+		case "material.transparency":
+			t, err := strconv.ParseFloat(v, 64)
+			if err != nil {
+				panic(err)
+			}
+
+			sph.GetMaterial().Transparency = t
 		case "transform":
 			vals, err := parseFloatList(v)
 			if err != nil {
@@ -264,9 +283,6 @@ func createShapeWith(s, shapeType string, data *godog.Table) error {
 			panic("Unexpected sphere with type of key=" + k + " value=" + v)
 		}
 	}
-
-	shapes[s] = sph
-
 	return nil
 }
 

@@ -164,3 +164,24 @@ Scenario: The reflected color at the maximum recursive depth
   When comps ← prepare_computations(i, r)
     And color ← reflected_color(w, comps, 0)    
   Then color = color(0.0, 0.0, 0.0)
+
+Scenario: The refracted color with an opaque surface
+  Given w ← default_world()
+    And shape ← the first object in w
+    And r ← ray(point(0.0, 0.0, -5.0), vector(0.0, 0.0, 1.0))
+    And xs ← intersections(4:shape, 6:shape)
+  When comps ← prepare_computations(xs[0], r, xs)
+    And c ← refracted_color(w, comps, 5)
+  Then c = color(0.0, 0.0, 0.0)
+
+Scenario: The refracted color at the maximum recursive depth
+  Given w ← default_world()
+    And shape ← the first object in w
+    And shape has:
+      | material.transparency     | 1.0 |
+      | material.refractive_index | 1.5 |
+    And r ← ray(point(0.0, 0.0, -5.0), vector(0.0, 0.0, 1.0))
+    And xs ← intersections(4:shape, 6:shape)
+  When comps ← prepare_computations(xs[0], r, xs)
+    And c ← refracted_color(w, comps, 0)
+  Then c = color(0.0, 0.0, 0.0)

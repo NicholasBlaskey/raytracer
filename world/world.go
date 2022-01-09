@@ -66,6 +66,13 @@ func (w *World) ReflectedColor(comps *intersection.Computations, remaining int) 
 	return c.Mul(comps.Obj.GetMaterial().Reflective)
 }
 
+func (w *World) RefractedColor(comps *intersection.Computations, remaining int) tuple.Tuple {
+	if remaining <= 0 || comps.Obj.GetMaterial().Transparency == 0 {
+		return tuple.Color(0.0, 0.0, 0.0)
+	}
+	return tuple.Color(1.0, 1.0, 1.0)
+}
+
 func (w *World) IsShadowed(p tuple.Tuple) bool {
 	v := w.Light.Position.Sub(p)
 	distance := v.Magnitude()

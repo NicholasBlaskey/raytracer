@@ -57,6 +57,8 @@ func worldSteps(ctx *godog.ScenarioContext) {
 		wordRegex, wordRegex, wordRegex), worldReflectedColor)
 	ctx.Step(fmt.Sprintf(`^%s ← reflected_color\(%s, %s, %s\)$`,
 		wordRegex, wordRegex, wordRegex, intRegex), worldReflectedColorDepthLimit)
+	ctx.Step(fmt.Sprintf(`^%s ← refracted_color\(%s, %s, %s\)$`,
+		wordRegex, wordRegex, wordRegex, intRegex), worldRefractedColor)
 
 	ctx.Step(fmt.Sprintf(`^color_at\(%s, %s\) should terminate successfully$`,
 		wordRegex, wordRegex), colorAtShouldHault)
@@ -165,6 +167,10 @@ func worldColorAt(res, w, r string) {
 
 func worldReflectedColor(res, w, comps string) {
 	tuples[res] = worlds[w].ReflectedColor(computations[comps], maxDepth)
+}
+
+func worldRefractedColor(res, w, comps string, remaining int) {
+	tuples[res] = worlds[w].RefractedColor(computations[comps], remaining)
 }
 
 func worldReflectedColorDepthLimit(res, w, comps string, limit int) {

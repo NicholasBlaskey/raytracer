@@ -67,16 +67,17 @@ func Hit(intersections []*Intersection) *Intersection {
 }
 
 type Computations struct {
-	Obj       Intersectable
-	T         float64
-	Point     tuple.Tuple
-	OverPoint tuple.Tuple
-	Eyev      tuple.Tuple
-	Normalv   tuple.Tuple
-	Reflectv  tuple.Tuple
-	N1        float64
-	N2        float64
-	Inside    bool
+	Obj        Intersectable
+	T          float64
+	Point      tuple.Tuple
+	OverPoint  tuple.Tuple
+	UnderPoint tuple.Tuple
+	Eyev       tuple.Tuple
+	Normalv    tuple.Tuple
+	Reflectv   tuple.Tuple
+	N1         float64
+	N2         float64
+	Inside     bool
 }
 
 // TODO add multiple light sources here
@@ -93,6 +94,7 @@ func (i *Intersection) PrepareComputations(r ray.Ray, xs []*Intersection) *Compu
 		c.Normalv = c.Normalv.Mul(-1.0)
 	}
 
+	c.UnderPoint = c.Point.Add(c.Normalv.Mul(-EPSILON))
 	c.OverPoint = c.Point.Add(c.Normalv.Mul(EPSILON))
 	c.Reflectv = r.Direction.Reflect(c.Normalv)
 

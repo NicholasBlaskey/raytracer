@@ -3,6 +3,8 @@ package main_test
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"strings"
 
 	//"github.com/nicholasblaskey/raytracer/ray"
 	"github.com/nicholasblaskey/raytracer/intersection"
@@ -23,6 +25,8 @@ func intersectionSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^%s ← intersection\(%s, %s\)$`,
 		wordRegex, floatRegex, wordRegex), intersectionCreate)
 	// TODO figure out varadic cucumber steps.
+	ctx.Step(fmt.Sprintf(`^%s ← intersections\(%s\)$`,
+		wordRegex, wordRegex), aggregateOneIntersection)
 	ctx.Step(fmt.Sprintf(`^%s ← intersections\(%s, %s\)$`,
 		wordRegex, wordRegex, wordRegex), aggregateIntersections)
 	ctx.Step(fmt.Sprintf(`^%s ← intersections\(%s, %s, %s, %s\)$`,
@@ -56,12 +60,19 @@ func intersectionSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^%s.point.(x|y|z) > %s.over_point.(x|y|z)$`,
 		wordRegex, wordRegex), pointBiggerThanOverPoint)
 
-	// TODO unhard code this test
-	ctx.Step(`^xs ← intersections\(2.0:A, 2.75:B, 3.25:C, 4.75:B, 5.25:C, 6:A\)$`,
+	ctx.Step(fmt.Sprintf(`^%s.under_point.(x|y|z) > EPSILON/2$`, wordRegex),
+		underPointGreaterThanEpsilonOver2)
+	ctx.Step(fmt.Sprintf(`^%s.point.(x|y|z) < %s.under_point.(x|y|z)$`,
+		wordRegex, wordRegex), pointSmallerThanUnderPoint)
+
+	ctx.Step(fmt.Sprintf(`^%s ← intersections\((.*)\)$`, wordRegex),
 		aggregateIntersectionsVariousIntersections)
 
 	ctx.Step(fmt.Sprintf(`^%s.(n1|n2) = %s$`, wordRegex, floatRegex),
 		n1OrN2Equal)
+	ctx.Step(fmt.Sprintf(`^%s ← prepare_computations\(%s, %s, %s\)$`,
+		wordRegex, wordRegex, wordRegex, wordRegex), intersectionsPrepareComputationsArr)
+
 	ctx.Step(fmt.Sprintf(`^%s ← prepare_computations\(%s\[%s\], %s, %s\)$`,
 		wordRegex, wordRegex, intRegex, wordRegex, wordRegex),
 		prepareComputationsXSs)
@@ -85,6 +96,10 @@ func intersectionObjectEqual(i, obj string) error {
 	return nil
 }
 
+func aggregateOneIntersection(res, i string) {
+	intersections[res] = intersection.Aggregate(intersectionObjects[i])
+}
+
 func aggregateIntersections(res, i0, i1 string) {
 	intersections[res] = intersection.Aggregate(intersectionObjects[i0],
 		intersectionObjects[i1])
@@ -95,16 +110,19 @@ func aggregateIntersections4(res, i0, i1, i2, i3 string) {
 		intersectionObjects[i1], intersectionObjects[i2], intersectionObjects[i3])
 }
 
-// TODO improve this since we are hard coding this for now.
-func aggregateIntersectionsVariousIntersections() {
-	intersections["xs"] = intersection.Aggregate(
-		&intersection.Intersection{2.0, shapes["A"]},
-		&intersection.Intersection{2.75, shapes["B"]},
-		&intersection.Intersection{3.25, shapes["C"]},
-		&intersection.Intersection{4.75, shapes["B"]},
-		&intersection.Intersection{5.25, shapes["C"]},
-		&intersection.Intersection{6.0, shapes["A"]},
-	)
+func aggregateIntersectionsVariousIntersections(res, params string) {
+	var intersects []*intersection.Intersection
+	for _, param := range strings.Split(params, ",") {
+		paramSplit := strings.Split(strings.Trim(param, " \t"), ":")
+		t, err := strconv.ParseFloat(paramSplit[0], 64)
+		if err != nil {
+			panic(err)
+		}
+
+		intersects = append(intersects, &intersection.Intersection{t, shapes[paramSplit[1]]})
+	}
+
+	intersections[res] = intersection.Aggregate(intersects...)
 }
 
 func intersectionCreateHit(hit, i string) {
@@ -127,6 +145,10 @@ func intersectionEquals(i0, i1 string) error {
 }
 
 func intersectionsPrepareComputations(res, i, r string) {
+	computations[res] = intersectionObjects[i].PrepareComputations(rays[r], nil)
+}
+
+func intersectionsPrepareComputationsArr(res, i, r, xs string) {
 	computations[res] = intersectionObjects[i].PrepareComputations(rays[r], nil)
 }
 
@@ -204,6 +226,39 @@ func pointBiggerThanOverPoint(comp, xyz string) error {
 	if p <= over {
 		return fmt.Errorf("%s.point.%s (%f) is not < (%f) %s.over_point.%s",
 			comp, xyz, p, over, comp, xyz)
+	}
+	return nil
+}
+
+func underPointGreaterThanEpsilonOver2(comp, xyz string) error {
+	val := computations[comp].UnderPoint[0]
+	if xyz == "y" {
+		val = computations[comp].UnderPoint[1]
+	} else {
+		val = computations[comp].UnderPoint[2]
+	}
+
+	if val <= intersection.EPSILON/2.0 {
+		return fmt.Errorf("%s.under_point.%s (%f) is not > (%f) EPSILON/2",
+			comp, xyz, val, intersection.EPSILON/2.0)
+	}
+	return nil
+}
+
+func pointSmallerThanUnderPoint(comp, xyz string) error {
+	under := computations[comp].UnderPoint[0]
+	p := computations[comp].Point[0]
+	if xyz == "y" {
+		p = computations[comp].Point[1]
+		under = computations[comp].UnderPoint[1]
+	} else {
+		p = computations[comp].Point[2]
+		under = computations[comp].UnderPoint[2]
+	}
+
+	if p >= under {
+		return fmt.Errorf("%s.point.%s (%f) is not < (%f) %s.under_point.%s",
+			comp, xyz, p, under, comp, xyz)
 	}
 	return nil
 }

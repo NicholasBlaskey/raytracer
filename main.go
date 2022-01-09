@@ -351,7 +351,7 @@ func main() {
 // Draw scene with reflection
 func main() {
 	//n := 600
-	n := 100
+	n := 1000
 	checker := material.CheckerPattern(
 		tuple.Color(1.0, 1.0, 1.0),
 		tuple.Color(0.0, 0.0, 0.0),
@@ -381,7 +381,7 @@ func main() {
 	glass.Transform = matrix.Translate(-0.5, 1.0, -1.0).Mul4(
 		matrix.Scale(1.0, 1.0, 1.0))
 	//glass.Material.Color = tuple.Color(1.0, 1.0, 1.0) //tuple.Color(0.1, 1.0, 0.5)
-	//glass.Material.Diffuse = 0.7
+	glass.Material.Diffuse = 0.5
 	//glass.Material.Specular = 0.3
 	//glass.Material.Reflective = 0.5
 

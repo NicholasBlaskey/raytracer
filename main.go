@@ -351,7 +351,7 @@ func main() {
 // Draw scene with reflection
 func main() {
 	//n := 600
-	n := 1000
+	n := 300
 	checker := material.CheckerPattern(
 		tuple.Color(1.0, 1.0, 1.0),
 		tuple.Color(0.0, 0.0, 0.0),
@@ -385,7 +385,7 @@ func main() {
 	//glass.Material.Specular = 0.3
 	//glass.Material.Reflective = 0.5
 
-	air := shape.NewSphere()
+	air := shape.NewGlassSphere()
 	air.Transform = matrix.Translate(-0.5, 1.0, -1.0).Mul4(
 		matrix.Scale(0.3, 0.3, 0.3))
 	air.Material.Color = tuple.Color(1.0, 1.0, 1.0)

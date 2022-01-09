@@ -233,3 +233,22 @@ Scenario: shade_hit() with a transparent material
   When comps ← prepare_computations(xs[0], r, xs)
     And color ← shade_hit(w, comps, 5)
   Then color = color(0.93642, 0.68642, 0.68642)
+
+Scenario: shade_hit() with a reflective, transparent material
+  Given w ← default_world()
+    And r ← ray(point(0.0, 0.0, -3.0), vector(0.0, -0.707106781187, 0.707106781187))
+    And floor ← plane() with:
+      | transform                 | translation(0, -1, 0) |
+      | material.reflective       | 0.5                   |
+      | material.transparency     | 0.5                   |
+      | material.refractive_index | 1.5                   |
+    And floor is added to w
+    And ball ← sphere() with:
+      | material.color     | (1, 0, 0)                  |
+      | material.ambient   | 0.5                        |
+      | transform          | translation(0, -3.5, -0.5) |
+    And ball is added to w
+    And xs ← intersections(1.41421356237:floor)
+  When comps ← prepare_computations(xs[0], r, xs)
+    And color ← shade_hit(w, comps, 5)
+  Then color = color(0.93391, 0.69643, 0.69243)

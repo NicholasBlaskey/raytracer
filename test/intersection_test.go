@@ -76,6 +76,9 @@ func intersectionSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^%s ← prepare_computations\(%s\[%s\], %s, %s\)$`,
 		wordRegex, wordRegex, intRegex, wordRegex, wordRegex),
 		prepareComputationsXSs)
+
+	ctx.Step(fmt.Sprintf(`^%s ← schlick\(%s\)$`,
+		wordRegex, wordRegex), schlick)
 }
 
 func intersectionCreate(i string, t float64, obj string) {
@@ -278,4 +281,8 @@ func n1OrN2Equal(comp, n1OrN2 string, expected float64) error {
 func prepareComputationsXSs(res, xs string, index int, r, intersects string) {
 	computations[res] = intersections[xs][index].PrepareComputations(
 		rays[r], intersections[intersects])
+}
+
+func schlick(res, comps string) {
+	floats[res] = computations[comps].Schlick()
 }

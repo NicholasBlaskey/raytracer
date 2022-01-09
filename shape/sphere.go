@@ -23,6 +23,7 @@ func NewGlassSphere() *Sphere {
 	m := material.New()
 	m.Transparency = 1.0
 	m.RefractiveIndex = 1.5
+	m.Reflective = 1.0
 	return &Sphere{matrix.Ident4(), m}
 }
 

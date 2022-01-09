@@ -41,6 +41,7 @@ func cameraSteps(ctx *godog.ScenarioContext) {
 		wordRegex, floatRegex, floatRegex, floatRegex, floatRegex),
 		cameraTransformToRotYMulTranslate)
 
+	ctx.Step(fmt.Sprintf(`^%s = %s$`, wordRegex, floatRegex), floatEqualConstant)
 	ctx.Step(fmt.Sprintf(`^%s.(hsize|vsize) = %s$`, wordRegex, intRegex),
 		cameraIntEqual)
 	ctx.Step(fmt.Sprintf(`^%s.(field_of_view|pixel_size) = %s$`, wordRegex, floatRegex),
@@ -102,4 +103,11 @@ func cameraRayForPixel(r, c string, x, y int) {
 
 func cameraRender(img, c, w string) {
 	canvases[img] = cameras[c].Render(worlds[w])
+}
+
+func floatEqualConstant(f string, expected float64) error {
+	if !compareFloat(floats[f], expected) {
+		return fmt.Errorf("%s expected %f got %f", f, expected, floats[f])
+	}
+	return nil
 }

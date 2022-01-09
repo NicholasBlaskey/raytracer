@@ -1,6 +1,8 @@
 package intersection
 
 import (
+	"math"
+
 	"github.com/nicholasblaskey/raytracer/matrix"
 	"github.com/nicholasblaskey/raytracer/ray"
 	"github.com/nicholasblaskey/raytracer/tuple"
@@ -133,4 +135,25 @@ func (i *Intersection) PrepareComputations(r ray.Ray, xs []*Intersection) *Compu
 	}
 
 	return c
+}
+
+func (c *Computations) Schlick() float64 {
+	cos := c.Eyev.Dot(c.Normalv)
+
+	n := 0.0
+	if c.N1 > c.N2 {
+		n = c.N1 / c.N2
+		sin2T := (n * n) * (1.0 - cos*cos)
+		if sin2T > 1.0 {
+			return 1.0
+		}
+
+		cosT := math.Sqrt(1.0 - sin2T)
+		cos = cosT
+	}
+
+	r0 := ((c.N1 - c.N2) / (c.N1 + c.N2))
+	r0 = r0 * r0
+
+	return r0 + (1-r0)*math.Pow((1-cos), 5.0)
 }

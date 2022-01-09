@@ -41,6 +41,11 @@ func (w *World) ShadeHit(comps *intersection.Computations, remaining int) tuple.
 	reflected := w.ReflectedColor(comps, remaining)
 	refracted := w.RefractedColor(comps, remaining)
 
+	material := comps.Obj.GetMaterial()
+	if material.Reflective > 0.0 && material.Transparency > 0.0 {
+		reflectance := comps.Schlick()
+		return surface.Add(reflected.Mul(reflectance).Add(refracted.Mul(1 - reflectance)))
+	}
 	return surface.Add(reflected).Add(refracted)
 }
 

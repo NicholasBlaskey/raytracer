@@ -348,7 +348,8 @@ func main() {
 }
 */
 
-// Draw scene with reflection
+/*
+// Draw scene with reflection (cool)
 func main() {
 	//n := 600
 	n := 300
@@ -401,6 +402,111 @@ func main() {
 	c := camera.New(n*2, n, math.Pi/3.0)
 	c.Transform = matrix.View(
 		tuple.Point(0.0, 1.5, -5.0),
+		tuple.Point(0.0, 1.0, 0.0),
+		tuple.Vector(0.0, 1.0, 0.0))
+
+	canv := c.Render(w)
+	if err := canv.Save("test.ppm"); err != nil {
+		panic(err)
+	}
+
+}
+*/
+
+// Draw scene with cubes.
+func main() {
+	//n := 600
+	n := 600
+	checker := material.CheckerPattern(
+		tuple.Color(1.0, 1.0, 1.0),
+		tuple.Color(0.0, 0.0, 0.0),
+	)
+
+	stripes := material.StripePattern(
+		tuple.Color(1.0, 1.0, 1.0),
+		tuple.Color(0.0, 0.0, 0.0),
+	)
+
+	floor := shape.NewPlane()
+	floor.Material.Color = tuple.Color(1.0, 0.9, 0.9)
+	floor.Material.Specular = 0.0
+	floor.Material.Pattern = checker
+
+	leftWall := shape.NewPlane()
+	leftWall.Transform = matrix.Translate(0.0, 0.0, 10.0).Mul4(
+		matrix.RotateX(math.Pi / 2))
+	leftWall.Material.Pattern = checker
+
+	cube := shape.NewCube()
+	cube.Transform = matrix.Translate(0.0, 1.0, 0.0).Mul4(
+		matrix.Scale(0.5, 0.5, 0.5)).Mul4(
+		matrix.RotateX(math.Pi / 4)).Mul4(
+		matrix.RotateZ(math.Pi / 4))
+	cube.Material.Transparency = 0.8
+	cube.Material.RefractiveIndex = 1.52
+	cube.Material.Reflective = 0.6
+
+	left := shape.NewCube()
+	left.Transform = matrix.Translate(-1.5, 1.0, 0.0).Mul4(
+		matrix.Scale(0.5, 0.5, 0.5))
+	left.Material.Color = tuple.Color(0.3, 0.3, 0.3)
+	left.Material.Transparency = 0.3
+	left.Material.RefractiveIndex = 1.52
+	left.Material.Reflective = 1.0
+	left.Material.Specular = 1.0
+	left.Material.Shininess = 400
+
+	glass := shape.NewGlassSphere()
+	glass.Transform = matrix.Translate(1.5, 1.0, 3.0).Mul4(
+		matrix.Scale(1.0, 1.0, 1.0))
+	//glass.Material.Color = tuple.Color(1.0, 1.0, 1.0) //tuple.Color(0.1, 1.0, 0.5)
+	glass.Material.Diffuse = 0.5
+
+	glass2 := shape.NewGlassSphere()
+	glass2.Transform = matrix.Translate(4.0, 1.0, 5.0).Mul4(
+		matrix.Scale(1.0, 1.0, 1.0))
+	//glass.Material.Color = tuple.Color(1.0, 1.0, 1.0) //tuple.Color(0.1, 1.0, 0.5)
+	glass2.Material.Diffuse = 0.5
+
+	cubeBack := shape.NewCube()
+	cubeBack.Transform = matrix.Translate(-3.5, 1.0, 4.5).Mul4(
+		matrix.Scale(1.0, 1.0, 1.0)).Mul4(
+		matrix.RotateY(-math.Pi / 3))
+	cubeBack.Material.Pattern = material.GradientPattern(
+		tuple.Color(0.15, 0.27, 0.33),
+		tuple.Color(0.91, 0.44, 0.32))
+
+	backWall := shape.NewPlane()
+	backWall.Transform = matrix.Translate(0.0, 0.0, -12.0).Mul4(
+		matrix.RotateX(math.Pi / 2))
+	backWall.Material.Pattern = stripes
+
+	/*
+		glass := shape.NewGlassSphere()
+		glass.Transform = matrix.Translate(-0.5, 1.0, -1.0).Mul4(
+			matrix.Scale(1.0, 1.0, 1.0))
+		//glass.Material.Color = tuple.Color(1.0, 1.0, 1.0) //tuple.Color(0.1, 1.0, 0.5)
+		glass.Material.Diffuse = 0.5
+		//glass.Material.Specular = 0.3
+		//glass.Material.Reflective = 0.5
+
+		air := shape.NewGlassSphere()
+		air.Transform = matrix.Translate(-0.5, 1.0, -1.0).Mul4(
+			matrix.Scale(0.3, 0.3, 0.3))
+		air.Material.Color = tuple.Color(1.0, 1.0, 1.0)
+		air.Material.RefractiveIndex = 1.02
+		air.Material.Transparency = 0.8
+	*/
+
+	w := world.New()
+	l := light.NewPointLight(tuple.Point(-10.0, 10.0, -10.0),
+		tuple.Color(1.0, 1.0, 1.0))
+	w.Light = &l
+	w.Objects = append(w.Objects, floor, leftWall, backWall, cube, left, glass, glass2, cubeBack)
+
+	c := camera.New(n*2, n, math.Pi/3.0)
+	c.Transform = matrix.View(
+		tuple.Point(0.0, 3.0, -5.0),
 		tuple.Point(0.0, 1.0, 0.0),
 		tuple.Vector(0.0, 1.0, 0.0))
 

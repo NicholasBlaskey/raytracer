@@ -16,6 +16,13 @@ func cubeBefore(ctx context.Context, sc *godog.Scenario) (context.Context, error
 
 func cubeSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`%s ← cube\(\)`, wordRegex), createCube)
+
+	ctx.Step(fmt.Sprintf(`%s ← local_normal_at\(%s, %s\)$`,
+		wordRegex, wordRegex, wordRegex), localNormalAtVariable)
+}
+
+func localNormalAtVariable(n, s, p string) {
+	tuples[n] = shapes[s].NormalAt(tuples[p])
 }
 
 func createCube(c string) {

@@ -20,12 +20,17 @@ func NewCube() *Cube {
 }
 
 func (s *Cube) localIntersections(r ray.Ray) []*intersection.Intersection {
+	// TODO optimize this when it is clear we don't need to check axis.
 	xTMin, xTMax := s.checkAxis(r.Origin[0], r.Direction[0])
 	yTMin, yTMax := s.checkAxis(r.Origin[1], r.Direction[1])
 	zTMin, zTMax := s.checkAxis(r.Origin[2], r.Direction[2])
 
 	tMin := math.Max(xTMin, math.Max(yTMin, zTMin))
 	tMax := math.Min(xTMax, math.Min(yTMax, zTMax))
+	if tMin > tMax {
+		return nil
+	}
+
 	return []*intersection.Intersection{
 		&intersection.Intersection{Obj: s, T: tMin},
 		&intersection.Intersection{Obj: s, T: tMax},
@@ -58,8 +63,15 @@ func (s *Cube) Intersections(origR ray.Ray) []*intersection.Intersection {
 	return intersection.Intersections(s, origR, s.localIntersections)
 }
 
-func (s *Cube) localNormalAt(objectPoint tuple.Tuple) tuple.Tuple {
-	return tuple.Vector(0.0, 1.0, 0.0)
+func (s *Cube) localNormalAt(p tuple.Tuple) tuple.Tuple {
+	xAbs, yAbs, zAbs := math.Abs(p[0]), math.Abs(p[1]), math.Abs(p[2])
+
+	if xAbs >= yAbs && xAbs >= zAbs {
+		return tuple.Vector(p[0], 0.0, 0.0)
+	} else if yAbs > xAbs && yAbs > zAbs {
+		return tuple.Vector(0.0, p[1], 0.0)
+	}
+	return tuple.Vector(0.0, 0.0, p[2])
 }
 
 func (s *Cube) NormalAt(worldPoint tuple.Tuple) tuple.Tuple {

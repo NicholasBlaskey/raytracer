@@ -21,6 +21,9 @@ func rayBefore(ctx context.Context, sc *godog.Scenario) (context.Context, error)
 func raySteps(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^%s ← ray\(%s, %s\)$`,
 		wordRegex, wordRegex, wordRegex), createRay)
+	ctx.Step(fmt.Sprintf(`^%s ← ray\(point\(%s, %s, %s\), %s\)$`,
+		wordRegex, floatRegex, floatRegex, floatRegex, wordRegex),
+		createRayFromHalfLiteral)
 	ctx.Step(fmt.Sprintf(`^%s ← ray\(point\(%s, %s, %s\), vector\(%s, %s, %s\)\)$`,
 		wordRegex, floatRegex, floatRegex, floatRegex,
 		floatRegex, floatRegex, floatRegex), createRayFromLiteral)
@@ -37,6 +40,10 @@ func raySteps(ctx *godog.ScenarioContext) {
 
 func createRay(r, origin, dir string) {
 	rays[r] = ray.New(tuples[origin], tuples[dir])
+}
+
+func createRayFromHalfLiteral(r string, ox, oy, oz float64, dir string) {
+	rays[r] = ray.New(tuple.Point(ox, oy, oz), tuples[dir])
 }
 
 func createRayFromLiteral(r string, ox, oy, oz, dx, dy, dz float64) {

@@ -27,6 +27,8 @@ func tuplesSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^%s ← color\(%s, %s, %s\)$`,
 		wordRegex, floatRegex, floatRegex, floatRegex), createVector)
 	ctx.Step(fmt.Sprintf(`^%s ← normalize\(%s\)$`, wordRegex, wordRegex), createVectorNormalize)
+	ctx.Step(fmt.Sprintf(`^%s ← normalize\(vector\(%s, %s, %s\)\)$`,
+		wordRegex, floatRegex, floatRegex, floatRegex), createVectorNormalizeLiteral)
 
 	// Check tuples are.
 	ctx.Step(fmt.Sprintf(`^%s\.(x|y|z|w|red|green|blue) = %s$`, wordRegex, floatRegex),
@@ -247,6 +249,10 @@ func createColor(t string, x, y, z float64) {
 
 func createVectorNormalize(newTuple string, t string) {
 	tuples[newTuple] = tuples[t].Normalize()
+}
+
+func createVectorNormalizeLiteral(t string, x, y, z float64) {
+	tuples[t] = tuple.Vector(x, y, z).Normalize()
 }
 
 func createPoint(t string, x, y, z float64) {

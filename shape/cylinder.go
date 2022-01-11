@@ -34,8 +34,12 @@ func (s *Cylinder) localIntersections(r ray.Ray) []*intersection.Intersection {
 		return nil
 	}
 
+	t0 := (-b - math.Sqrt(disc)) / (2.0 * a)
+	t1 := (-b + math.Sqrt(disc)) / (2.0 * a)
+
 	return []*intersection.Intersection{
-		&intersection.Intersection{Obj: s, T: 1.0}, // TEST REMOVE
+		&intersection.Intersection{Obj: s, T: t0},
+		&intersection.Intersection{Obj: s, T: t1},
 	}
 }
 
@@ -44,14 +48,7 @@ func (s *Cylinder) Intersections(origR ray.Ray) []*intersection.Intersection {
 }
 
 func (s *Cylinder) localNormalAt(p tuple.Tuple) tuple.Tuple {
-	xAbs, yAbs, zAbs := math.Abs(p[0]), math.Abs(p[1]), math.Abs(p[2])
-
-	if xAbs >= yAbs && xAbs >= zAbs {
-		return tuple.Vector(p[0], 0.0, 0.0)
-	} else if yAbs > xAbs && yAbs > zAbs {
-		return tuple.Vector(0.0, p[1], 0.0)
-	}
-	return tuple.Vector(0.0, 0.0, p[2])
+	return tuple.Vector(p[0], 0.0, p[2])
 }
 
 func (s *Cylinder) NormalAt(worldPoint tuple.Tuple) tuple.Tuple {

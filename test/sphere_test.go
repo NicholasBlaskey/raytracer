@@ -92,7 +92,7 @@ func intersectValueEqual(i string, index int, expected float64) error {
 			index, len(intersections[i]))
 	}
 
-	if intersections[i][index].T != expected {
+	if !compareFloat(intersections[i][index].T, expected) {
 		return fmt.Errorf("%s[%d] expected %f got %f", i, index,
 			expected, intersections[i][index].T)
 	}

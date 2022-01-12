@@ -460,9 +460,12 @@ func main() {
 	air.Material.Transparency = 0.8
 	air.Material.Reflective = 1.0
 
-	glass2 := shape.NewSphere()
+	glass2 := shape.NewCylinder()
 	glass2.Transform = matrix.Translate(-0.5, 1.0, -1.0).Mul4(
+		matrix.RotateX(math.Pi / 3)).Mul4(
 		matrix.Scale(0.4, 0.4, 0.4))
+	glass2.Min = -1
+	glass2.Max = 1
 	glass2.Material.Diffuse = 0.5
 	glass2.Material.Reflective = 0.5
 
@@ -470,7 +473,7 @@ func main() {
 	l := light.NewPointLight(tuple.Point(-10.0, 10.0, -10.0),
 		tuple.Color(1.0, 1.0, 1.0))
 	w.Light = &l
-	w.Objects = append(w.Objects, floor, leftWall, backWall, glass, air, glass2)
+	w.Objects = append(w.Objects, floor, leftWall, backWall, glass2)
 
 	c := camera.New(n*2, n, math.Pi/3.0)
 	c.Transform = matrix.View(

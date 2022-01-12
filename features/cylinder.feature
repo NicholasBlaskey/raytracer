@@ -40,3 +40,49 @@ Scenario Outline: Normal vector on a cylinder
     | point(0.0, -2.0, 1.0) | vector(0.0, 0.0, 1.0)  |
     | point(-1.0, 1.0, 0.0) | vector(-1.0, 0.0, 0.0) |
 
+Scenario: The default minimum and maximum for a cylinder
+  Given cyl ← cylinder()
+  Then cyl.minimum = -infinity
+    And cyl.maximum = infinity
+
+Scenario Outline: Intersecting a constrained cylinder
+  Given cyl ← cylinder()
+    And cyl.minimum ← 1.0
+    And cyl.maximum ← 2.0
+    And direction ← normalize(<direction>)
+    And r ← ray(<point>, direction)
+  When xs ← local_intersect(cyl, r)
+  Then xs.count = <count>
+
+  Examples:
+    |   | point                 | direction             | count |
+    | 1 | point(0.0, 1.5, 0.0)  | vector(0.1, 1.0, 0.0) |     0 |
+    | 2 | point(0.0, 3.0, -5.0) | vector(0.0, 0.0, 1.0) |     0 |
+    | 3 | point(0.0, 0.0, -5.0) | vector(0.0, 0.0, 1.0) |     0 |
+    | 4 | point(0.0, 2.0, -5.0) | vector(0.0, 0.0, 1.0) |     0 |
+    | 5 | point(0.0, 1.0, -5.0) | vector(0.0, 0.0, 1.0) |     0 |
+    | 6 | point(0.0, 1.5, -2.0) | vector(0.0, 0.0, 1.0) |     2 |
+
+Scenario: The default closed value for a cylinder
+  Given cyl ← cylinder()
+  Then cyl.closed = false
+
+Scenario Outline: Intersecting the caps of a closed cylinder
+  Given cyl ← cylinder()
+    And cyl.minimum ← 1.0
+    And cyl.maximum ← 2.0
+    And cyl.closed ← true
+    And direction ← normalize(<direction>)
+    And r ← ray(<point>, direction)
+  When xs ← local_intersect(cyl, r)
+  Then xs.count = <count>
+
+  Examples:
+    |   | point                  | direction              | count |               
+    | 1 | point(0.0, 3.0, 0.0)   | vector(0.0, -1.0, 0.0) |     2 |               
+    | 2 | point(0.0, 3.0, -2.0)  | vector(0.0, -1.0, 2.0) |     2 |               
+    | 3 | point(0.0, 4.0, -2.0)  | vector(0.0, -1.0, 1.0) |     2 | # corner case 
+    | 4 | point(0.0, 0.0, -2.0)  | vector(0.0, 1.0, 2.0)  |     2 |               
+    | 5 | point(0.0, -1.0, -2.0) | vector(0.0, 1.0, 1.0)  |     2 | # corner case 
+
+

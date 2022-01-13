@@ -16,6 +16,7 @@ func cylinderBefore(ctx context.Context, sc *godog.Scenario) (context.Context, e
 
 func cylinderSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^%s ← cylinder\(\)$`, wordRegex), createCylinder)
+	ctx.Step(fmt.Sprintf(`^%s ← cone\(\)$`, wordRegex), createCone)
 
 	ctx.Step(fmt.Sprintf(`^%s.(minimum|maximum) ← %s$`,
 		wordRegex, floatRegex), cylinderAssignBounds)
@@ -26,6 +27,10 @@ func cylinderSteps(ctx *godog.ScenarioContext) {
 		wordRegex), cylinderAssignClosed)
 	ctx.Step(fmt.Sprintf(`^%s.closed = (true|false)$`,
 		wordRegex), cylinderClosedEqualTo)
+}
+
+func createCone(s string) {
+	shapes[s] = shape.NewCone()
 }
 
 func createCylinder(s string) {

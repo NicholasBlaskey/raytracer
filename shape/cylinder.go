@@ -93,6 +93,15 @@ func (s *Cylinder) Intersections(origR ray.Ray) []*intersection.Intersection {
 }
 
 func (s *Cylinder) localNormalAt(p tuple.Tuple) tuple.Tuple {
+	dist := p[0]*p[0] + p[2]*p[2]
+	if s.Closed && dist < 1.0 && p[1] >= s.Max-intersection.EPSILON {
+		return tuple.Vector(0, 1.0, 0.0)
+	}
+
+	if s.Closed && dist < 1.0 && p[1] <= s.Min+intersection.EPSILON {
+		return tuple.Vector(0, -1.0, 0.0)
+	}
+
 	return tuple.Vector(p[0], 0.0, p[2])
 }
 

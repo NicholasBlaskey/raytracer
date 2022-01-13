@@ -85,4 +85,19 @@ Scenario Outline: Intersecting the caps of a closed cylinder
     | 4 | point(0.0, 0.0, -2.0)  | vector(0.0, 1.0, 2.0)  |     2 |               
     | 5 | point(0.0, -1.0, -2.0) | vector(0.0, 1.0, 1.0)  |     2 | # corner case 
 
+Scenario Outline: The normal vector on a cylinder's end caps
+  Given cyl ← cylinder()
+    And cyl.minimum ← 1.0
+    And cyl.maximum ← 2.0
+    And cyl.closed ← true
+  When n ← local_normal_at(cyl, <point>)
+  Then n = <normal>
 
+  Examples:
+    | point                  | normal                 |
+    | point(0.0, 1.0, 0.0)   | vector(0.0, -1.0, 0.0) |
+    | point(0.5, 1.0, 0.0)   | vector(0.0, -1.0, 0.0) |
+    | point(0.0, 1.0, 0.5)   | vector(0.0, -1.0, 0.0) |
+    | point(0.0, 2.0, 0.0)   | vector(0.0, 1.0, 0.0)  |
+    | point(0.5, 2.0, 0.0)   | vector(0.0, 1.0, 0.0)  |
+    | point(0.0, 2.0, 0.5)   | vector(0.0, 1.0, 0.0)  |

@@ -26,11 +26,11 @@ func NewCone() *Cone {
 		Max:       math.Inf(1.0)}
 }
 
-func checkConeCap(r ray.Ray, t float64) bool {
+func checkConeCap(r ray.Ray, t, y float64) bool {
 	x := r.Origin[0] + t*r.Direction[0]
 	z := r.Origin[2] + t*r.Direction[2]
 
-	return (x*x + z*z) <= 1
+	return (x*x + z*z) <= math.Abs(y)
 }
 
 func (s *Cone) intersectCaps(r ray.Ray,
@@ -41,12 +41,12 @@ func (s *Cone) intersectCaps(r ray.Ray,
 	}
 
 	t := (s.Min - r.Origin[1]) / r.Direction[1]
-	if checkConeCap(r, t) {
+	if checkConeCap(r, t, s.Min) {
 		xs = append(xs, &intersection.Intersection{Obj: s, T: t})
 	}
 
 	t = (s.Max - r.Origin[1]) / r.Direction[1]
-	if checkConeCap(r, t) {
+	if checkConeCap(r, t, s.Max) {
 		xs = append(xs, &intersection.Intersection{Obj: s, T: t})
 	}
 	return xs
@@ -70,8 +70,8 @@ func (s *Cone) localIntersections(r ray.Ray) []*intersection.Intersection {
 			return nil
 		}
 		t := -c / (2.0 * b)
-		//return s.intersectCaps(r, nil)
-		return []*intersection.Intersection{&intersection.Intersection{Obj: s, T: t}}
+		return s.intersectCaps(r,
+			[]*intersection.Intersection{&intersection.Intersection{Obj: s, T: t}})
 	}
 
 	disc := b*b - 4*a*c
@@ -114,7 +114,17 @@ func (s *Cone) localNormalAt(p tuple.Tuple) tuple.Tuple {
 		return tuple.Vector(0, -1.0, 0.0)
 	}
 
-	return tuple.Vector(p[0], 0.0, p[2])
+	// How to handle this case? Exactly on the non manifold point?
+	if math.Abs(dist)+math.Abs(p[1]) < intersection.EPSILON {
+		return tuple.Vector(1.0, 0.0, 0.0)
+	}
+
+	y := math.Sqrt(dist)
+	if p[1] > 0.0 {
+		y = -y
+	}
+
+	return tuple.Vector(p[0], y, p[2])
 }
 
 func (s *Cone) NormalAt(worldPoint tuple.Tuple) tuple.Tuple {

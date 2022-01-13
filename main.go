@@ -462,17 +462,17 @@ func main() {
 
 	glass2 := shape.NewCone()
 	glass2.Transform = matrix.Translate(-0.5, 1.0, -1.0).Mul4(
-		//		matrix.RotateX(math.Pi / 3)).Mul4(
+		matrix.RotateX(math.Pi / 5)).Mul4(
 		matrix.Scale(0.4, 0.4, 0.4))
-	//glass2.Min = -2
-	//glass2.Max = 2
+	glass2.Min = 0.0
+	glass2.Max = 2.0
 	glass2.Closed = true
 	glass2.Material.Diffuse = 0.5
 	glass2.Material.Specular = 1.0
 	glass2.Material.Shininess = 800
 	glass2.Material.Reflective = 0.8
 	//glass2.Material.Transparency = 0.8
-	glass2.Material.RefractiveIndex = 1.52
+	//glass2.Material.RefractiveIndex = 1.52
 
 	w := world.New()
 	l := light.NewPointLight(tuple.Point(-10.0, 10.0, -10.0),

@@ -39,9 +39,19 @@ func createCylinder(s string) {
 
 func cylinderAssignBounds(s, minOrMax string, v float64) {
 	if minOrMax == "minimum" {
-		shapes[s].(*shape.Cylinder).Min = v
+		c, isCyl := shapes[s].(*shape.Cylinder)
+		if isCyl {
+			c.Min = v
+		} else {
+			shapes[s].(*shape.Cone).Min = v
+		}
 	} else {
-		shapes[s].(*shape.Cylinder).Max = v
+		c, isCyl := shapes[s].(*shape.Cylinder)
+		if isCyl {
+			c.Max = v
+		} else {
+			shapes[s].(*shape.Cone).Max = v
+		}
 	}
 }
 
@@ -63,7 +73,11 @@ func cylinderBoundsEqualTo(s, minOrMax, posOrNegInf string) error {
 }
 
 func cylinderAssignClosed(s, isClosed string) {
-	shapes[s].(*shape.Cylinder).Closed = isClosed == "true"
+	if c, ok := shapes[s].(*shape.Cylinder); ok {
+		c.Closed = isClosed == "true"
+	} else {
+		shapes[s].(*shape.Cone).Closed = isClosed == "true"
+	}
 }
 
 func cylinderClosedEqualTo(s, isClosed string) error {

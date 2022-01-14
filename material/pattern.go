@@ -21,6 +21,8 @@ type Object interface {
 	GetTransform() matrix.Mat4
 }
 
+// TODO this currently does not handle groups!
+// Need to add WorldToObject here.
 // Reconsider this too.
 func WorldToPattern(p Pattern, obj Object, worldPoint tuple.Tuple) tuple.Tuple {
 	objPoint := obj.GetTransform().Inv().Mul4x1(worldPoint)

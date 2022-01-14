@@ -5,7 +5,7 @@ import (
 
 	"github.com/nicholasblaskey/raytracer/camera"
 	"github.com/nicholasblaskey/raytracer/light"
-	"github.com/nicholasblaskey/raytracer/material"
+	//"github.com/nicholasblaskey/raytracer/material"
 	"github.com/nicholasblaskey/raytracer/matrix"
 	"github.com/nicholasblaskey/raytracer/shape"
 	"github.com/nicholasblaskey/raytracer/tuple"
@@ -413,76 +413,57 @@ func main() {
 }
 */
 
+func hexagonCorner() *shape.Sphere {
+	s := shape.NewSphere()
+	s.SetTransform(matrix.Translate(0.0, 0.0, -1.0).Mul4(
+		matrix.Scale(0.25, 0.25, 0.25)))
+	return s
+}
+
+func hexagonEdge() *shape.Cylinder {
+	s := shape.NewCylinder()
+	s.Min = 0.0
+	s.Max = 1.0
+	s.SetTransform(matrix.Translate(0.0, 0.0, -1.0).Mul4(
+		matrix.RotateY(-math.Pi / 6.0)).Mul4(
+		matrix.RotateZ(-math.Pi / 2.0)).Mul4(
+		matrix.Scale(0.25, 1.0, 0.25)))
+	return s
+}
+
+func hexagonSide() *shape.Group {
+	s := shape.NewGroup()
+	s.AddChild(hexagonCorner())
+	s.AddChild(hexagonEdge())
+	return s
+}
+
+func hexagon() *shape.Group {
+	hex := shape.NewGroup()
+	for n := 0; n < 6; n++ {
+		side := hexagonSide()
+		side.SetTransform(matrix.RotateY(float64(n) * math.Pi / 3.0))
+		hex.AddChild(side)
+	}
+	return hex
+}
+
 // Draw scene with cubes.
 func main() {
 	//n := 600
 	n := 300
-	checker := material.CheckerPattern(
-		tuple.Color(1.0, 1.0, 1.0),
-		tuple.Color(0.0, 0.0, 0.0),
-	)
 
-	stripes := material.StripePattern(
-		tuple.Color(1.0, 1.0, 1.0),
-		tuple.Color(0.0, 0.0, 0.0),
-	)
-
-	floor := shape.NewPlane()
-	floor.Material.Color = tuple.Color(1.0, 0.9, 0.9)
-	floor.Material.Specular = 0.0
-	floor.Material.Pattern = checker
-
-	leftWall := shape.NewPlane()
-	leftWall.Transform = matrix.Translate(0.0, 0.0, 10.0).Mul4(
-		matrix.RotateX(math.Pi / 2))
-	leftWall.Material.Pattern = checker
-
-	backWall := shape.NewPlane()
-	backWall.Transform = matrix.Translate(0.0, 0.0, -12.0).Mul4(
-		matrix.RotateX(math.Pi / 2))
-	backWall.Material.Pattern = stripes
-
-	glass := shape.NewGlassSphere()
-	glass.Transform = matrix.Translate(-0.5, 1.0, -1.0).Mul4(
-		matrix.Scale(1.0, 1.0, 1.0))
-	//glass.Material.Color = tuple.Color(1.0, 1.0, 1.0) //tuple.Color(0.1, 1.0, 0.5)
-	glass.Material.Diffuse = 0.5
-	//glass.Material.Specular = 0.3
-	glass.Material.Reflective = 0.5
-
-	air := shape.NewCube()
-	air.Transform = matrix.Translate(-0.5, 1.0, -1.0).Mul4(
-		matrix.RotateY(math.Pi / 3)).Mul4(
-		matrix.RotateZ(math.Pi / 3)).Mul4(
-		matrix.Scale(0.3, 0.3, 0.3))
-	air.Material.Color = tuple.Color(1.0, 1.0, 1.0)
-	air.Material.RefractiveIndex = 1.02
-	air.Material.Transparency = 0.8
-	air.Material.Reflective = 1.0
-
-	glass2 := shape.NewCone()
-	glass2.Transform = matrix.Translate(-0.5, 1.0, -1.0).Mul4(
-		matrix.RotateX(math.Pi / 5)).Mul4(
-		matrix.Scale(0.4, 0.4, 0.4))
-	glass2.Min = 0.0
-	glass2.Max = 2.0
-	glass2.Closed = true
-	glass2.Material.Diffuse = 0.5
-	glass2.Material.Specular = 1.0
-	glass2.Material.Shininess = 800
-	glass2.Material.Reflective = 0.8
-	//glass2.Material.Transparency = 0.8
-	//glass2.Material.RefractiveIndex = 1.52
+	hex := hexagon()
 
 	w := world.New()
 	l := light.NewPointLight(tuple.Point(-10.0, 10.0, -10.0),
 		tuple.Color(1.0, 1.0, 1.0))
 	w.Light = &l
-	w.Objects = append(w.Objects, floor, leftWall, backWall, glass2)
+	w.Objects = append(w.Objects, hex)
 
 	c := camera.New(n*2, n, math.Pi/3.0)
 	c.Transform = matrix.View(
-		tuple.Point(0.0, 1.0, -5.0),
+		tuple.Point(-1.0, 3.0, -5.0),
 		tuple.Point(0.0, 1.0, 0.0),
 		tuple.Vector(0.0, 1.0, 0.0))
 

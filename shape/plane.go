@@ -13,10 +13,11 @@ import (
 type Plane struct {
 	Transform matrix.Mat4
 	Material  *material.Material
+	Parent    intersection.Intersectable
 }
 
 func NewPlane() *Plane {
-	return &Plane{matrix.Ident4(), material.New()}
+	return &Plane{Transform: matrix.Ident4(), Material: material.New()}
 }
 
 func (s *Plane) localIntersections(r ray.Ray) []*intersection.Intersection {
@@ -59,4 +60,12 @@ func (s *Plane) GetTransform() matrix.Mat4 {
 
 func (s *Plane) SetTransform(m matrix.Mat4) {
 	s.Transform = m
+}
+
+func (s *Plane) GetParent() intersection.Intersectable {
+	return s.Parent
+}
+
+func (s *Plane) SetParent(p intersection.Intersectable) {
+	s.Parent = p
 }

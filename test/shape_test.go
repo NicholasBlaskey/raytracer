@@ -50,6 +50,7 @@ func savedRayEqual(s, origOrDir, pointOrVec string, x, y, z float64) error {
 type testShape struct {
 	Transform matrix.Mat4
 	Material  *material.Material
+	Parent    intersection.Intersectable
 }
 
 func testShapeNew() *testShape {
@@ -70,6 +71,14 @@ func (s *testShape) GetMaterial() *material.Material {
 
 func (s *testShape) SetMaterial(m *material.Material) {
 	s.Material = m
+}
+
+func (s *testShape) GetParent() intersection.Intersectable {
+	return s.Parent
+}
+
+func (s *testShape) SetParent(p intersection.Intersectable) {
+	s.Parent = p
 }
 
 func (s *testShape) NormalAt(t tuple.Tuple) tuple.Tuple {

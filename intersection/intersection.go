@@ -18,6 +18,11 @@ type Intersectable interface {
 	//
 	GetMaterial() *material.Material
 	SetMaterial(*material.Material)
+	// This should be of type *shape.Parent
+	// but can't because of import cycles. TODO
+	// figure a way around that.
+	GetParent() Intersectable
+	SetParent(Intersectable)
 	//
 	NormalAt(tuple.Tuple) tuple.Tuple
 	Intersections(ray.Ray) []*Intersection

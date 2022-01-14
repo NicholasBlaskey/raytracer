@@ -16,6 +16,7 @@ type Cone struct {
 	Min       float64
 	Max       float64
 	Closed    bool
+	Parent    intersection.Intersectable
 }
 
 func NewCone() *Cone {
@@ -145,4 +146,12 @@ func (s *Cone) GetTransform() matrix.Mat4 {
 
 func (s *Cone) SetTransform(m matrix.Mat4) {
 	s.Transform = m
+}
+
+func (s *Cone) GetParent() intersection.Intersectable {
+	return s.Parent
+}
+
+func (s *Cone) SetParent(p intersection.Intersectable) {
+	s.Parent = p
 }

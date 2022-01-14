@@ -48,6 +48,13 @@ func localIntersect(xs, p, r string) {
 }
 
 func intersectionsAreEmpty(xs string) error {
+	if g, ok := shapes[xs].(*shape.Group); ok {
+		if g.Parent != nil || g.Children != nil {
+			return fmt.Errorf("%s expected to be empty instead got %+v", xs, g)
+		}
+		return nil
+	}
+
 	if len(intersections[xs]) != 0 {
 		return fmt.Errorf("%s expected to be empty got %v", xs, intersections[xs])
 	}

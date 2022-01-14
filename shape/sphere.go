@@ -13,10 +13,11 @@ import (
 type Sphere struct {
 	Transform matrix.Mat4
 	Material  *material.Material
+	Parent    intersection.Intersectable
 }
 
 func NewSphere() *Sphere {
-	return &Sphere{matrix.Ident4(), material.New()}
+	return &Sphere{Transform: matrix.Ident4(), Material: material.New()}
 }
 
 func NewGlassSphere() *Sphere {
@@ -24,7 +25,7 @@ func NewGlassSphere() *Sphere {
 	m.Transparency = 1.0
 	m.RefractiveIndex = 1.5
 	m.Reflective = 1.0
-	return &Sphere{matrix.Ident4(), m}
+	return &Sphere{Transform: matrix.Ident4(), Material: m}
 }
 
 func (s *Sphere) localIntersections(r ray.Ray) []*intersection.Intersection {
@@ -75,4 +76,12 @@ func (s *Sphere) GetTransform() matrix.Mat4 {
 
 func (s *Sphere) SetTransform(m matrix.Mat4) {
 	s.Transform = m
+}
+
+func (s *Sphere) GetParent() intersection.Intersectable {
+	return s.Parent
+}
+
+func (s *Sphere) SetParent(p intersection.Intersectable) {
+	s.Parent = p
 }

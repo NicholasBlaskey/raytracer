@@ -10,17 +10,23 @@ import (
 	"github.com/nicholasblaskey/raytracer/tuple"
 )
 
-type Cube struct {
+type Group struct {
 	Transform matrix.Mat4
 	Material  *material.Material
+	Children  []intersection.Intersectable
 	Parent    intersection.Intersectable
 }
 
-func NewCube() *Cube {
-	return &Cube{Transform: matrix.Ident4(), Material: material.New()}
+func (s *Group) AddChild(c intersection.Intersectable) {
+	c.SetParent(s)
+	s.Children = append(s.Children, c)
 }
 
-func (s *Cube) localIntersections(r ray.Ray) []*intersection.Intersection {
+func NewGroup() *Group {
+	return &Group{Transform: matrix.Ident4(), Material: material.New()}
+}
+
+func (s *Group) localIntersections(r ray.Ray) []*intersection.Intersection {
 	// TODO optimize this when it is clear we don't need to check axis.
 	xTMin, xTMax := s.checkAxis(r.Origin[0], r.Direction[0])
 	yTMin, yTMax := s.checkAxis(r.Origin[1], r.Direction[1])
@@ -38,7 +44,7 @@ func (s *Cube) localIntersections(r ray.Ray) []*intersection.Intersection {
 	}
 }
 
-func (s *Cube) checkAxis(origin, direction float64) (float64, float64) {
+func (s *Group) checkAxis(origin, direction float64) (float64, float64) {
 	tMinNumerator := (-1 - origin)
 	tMaxNumerator := (1 - origin)
 
@@ -60,11 +66,11 @@ func (s *Cube) checkAxis(origin, direction float64) (float64, float64) {
 	return tMin, tMax
 }
 
-func (s *Cube) Intersections(origR ray.Ray) []*intersection.Intersection {
+func (s *Group) Intersections(origR ray.Ray) []*intersection.Intersection {
 	return intersection.Intersections(s, origR, s.localIntersections)
 }
 
-func (s *Cube) localNormalAt(p tuple.Tuple) tuple.Tuple {
+func (s *Group) localNormalAt(p tuple.Tuple) tuple.Tuple {
 	xAbs, yAbs, zAbs := math.Abs(p[0]), math.Abs(p[1]), math.Abs(p[2])
 
 	if xAbs >= yAbs && xAbs >= zAbs {
@@ -75,30 +81,30 @@ func (s *Cube) localNormalAt(p tuple.Tuple) tuple.Tuple {
 	return tuple.Vector(0.0, 0.0, p[2])
 }
 
-func (s *Cube) NormalAt(worldPoint tuple.Tuple) tuple.Tuple {
+func (s *Group) NormalAt(worldPoint tuple.Tuple) tuple.Tuple {
 	return intersection.NormalAt(s, worldPoint, s.localNormalAt)
 }
 
-func (s *Cube) GetMaterial() *material.Material {
+func (s *Group) GetMaterial() *material.Material {
 	return s.Material
 }
 
-func (s *Cube) SetMaterial(m *material.Material) {
+func (s *Group) SetMaterial(m *material.Material) {
 	s.Material = m
 }
 
-func (s *Cube) GetTransform() matrix.Mat4 {
+func (s *Group) GetTransform() matrix.Mat4 {
 	return s.Transform
 }
 
-func (s *Cube) SetTransform(m matrix.Mat4) {
+func (s *Group) SetTransform(m matrix.Mat4) {
 	s.Transform = m
 }
 
-func (s *Cube) GetParent() intersection.Intersectable {
+func (s *Group) GetParent() intersection.Intersectable {
 	return s.Parent
 }
 
-func (s *Cube) SetParent(p intersection.Intersectable) {
+func (s *Group) SetParent(p intersection.Intersectable) {
 	s.Parent = p
 }

@@ -16,6 +16,7 @@ type Cylinder struct {
 	Min       float64
 	Max       float64
 	Closed    bool
+	Parent    intersection.Intersectable
 }
 
 func NewCylinder() *Cylinder {
@@ -123,4 +124,12 @@ func (s *Cylinder) GetTransform() matrix.Mat4 {
 
 func (s *Cylinder) SetTransform(m matrix.Mat4) {
 	s.Transform = m
+}
+
+func (s *Cylinder) GetParent() intersection.Intersectable {
+	return s.Parent
+}
+
+func (s *Cylinder) SetParent(p intersection.Intersectable) {
+	s.Parent = p
 }

@@ -34,16 +34,40 @@ func Intersections(i Intersectable, r ray.Ray,
 	return intersectFunc(r.Transform(i.GetTransform().Inv()))
 }
 
+func WorldToObject(s Intersectable, p tuple.Tuple) tuple.Tuple {
+	if s.GetParent() != nil {
+		p = WorldToObject(s.GetParent(), p)
+	}
+
+	return s.GetTransform().Inv().Mul4x1(p)
+}
+
+func NormalToWorld(s Intersectable, n tuple.Tuple) tuple.Tuple {
+	n = s.GetTransform().Inv().T().Mul4x1(n)
+	n[3] = 0.0
+	n = n.Normalize()
+
+	if s.GetParent() != nil {
+		n = NormalToWorld(s.GetParent(), n)
+	}
+	return n
+}
+
 func NormalAt(i Intersectable, worldPoint tuple.Tuple,
 	normFunc func(tuple.Tuple) tuple.Tuple) tuple.Tuple {
 
-	invT := i.GetTransform().Inv()
-	objectPoint := invT.Mul4x1(worldPoint)
-	objectNormal := normFunc(objectPoint)
-	worldNormal := invT.T().Mul4x1(objectNormal)
-	worldNormal[3] = 0.0
+	/*
+				invT := i.GetTransform().Inv()
+				objectPoint := invT.Mul4x1(worldPoint)
+				objectNormal := normFunc(objectPoint)
+				worldNormal := invT.T().Mul4x1(objectNormal)
+				worldNormal[3] = 0.0
 
-	return worldNormal.Normalize()
+		return worldNormal.Normalize()
+	*/
+	localPoint := WorldToObject(i, worldPoint)
+	localNormal := normFunc(localPoint)
+	return NormalToWorld(i, localNormal)
 }
 
 type Intersection struct {

@@ -74,3 +74,27 @@ Scenario: Converting a point from world to object space
     And add_child(g2, s)
   When p ← world_to_object(s, point(-2.0, 0.0, -10.0))
   Then p = point(0.0, 0.0, -1.0)
+
+Scenario: Converting a normal from object to world space
+  Given g1 ← group()
+    And set_transform(g1, rotation_y(1.57079632679))
+    And g2 ← group()
+    And set_transform(g2, scaling(1.0, 2.0, 3.0))
+    And add_child(g1, g2)
+    And s ← sphere()
+    And set_transform(s, translation(5.0, 0.0, 0.0))
+    And add_child(g2, s)
+  When n ← normal_to_world(s, vector(0.57735026919, 0.57735026919, 0.57735026919))
+  Then n = vector(0.2857, 0.4286, -0.8571)
+
+Scenario: Finding the normal on a child object
+  Given g1 ← group()
+    And set_transform(g1, rotation_y(1.57079632679))
+    And g2 ← group()
+    And set_transform(g2, scaling(1.0, 2.0, 3.0))
+    And add_child(g1, g2)
+    And s ← sphere()
+    And set_transform(s, translation(5.0, 0.0, 0.0))
+    And add_child(g2, s)
+  When n ← normal_at(s, point(1.7321, 1.1547, -5.5774))
+  Then n = vector(0.2857, 0.4286, -0.8571)

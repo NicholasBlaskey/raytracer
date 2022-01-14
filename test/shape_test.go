@@ -12,8 +12,6 @@ import (
 	"github.com/nicholasblaskey/raytracer/ray"
 	"github.com/nicholasblaskey/raytracer/tuple"
 
-	"github.com/nicholasblaskey/raytracer/shape"
-
 	/*
 		"github.com/nicholasblaskey/raytracer/material"
 		"github.com/nicholasblaskey/raytracer/matrix"
@@ -43,6 +41,8 @@ func shapeSteps(ctx *godog.ScenarioContext) {
 
 	ctx.Step(fmt.Sprintf(`^%s ← world_to_object\(%s, point\(%s, %s, %s\)\)$`,
 		wordRegex, wordRegex, floatRegex, floatRegex, floatRegex), worldToObject)
+	ctx.Step(fmt.Sprintf(`^%s ← normal_to_world\(%s, vector\(%s, %s, %s\)\)$`,
+		wordRegex, wordRegex, floatRegex, floatRegex, floatRegex), normalToWorld)
 }
 
 func createTestShape(s string) {
@@ -109,5 +109,9 @@ func (s *testShape) Intersections(origR ray.Ray) []*intersection.Intersection {
 }
 
 func worldToObject(p, s string, x, y, z float64) {
-	tuples[p] = shape.WorldToObject(shapes[s], tuple.Point(x, y, z))
+	tuples[p] = intersection.WorldToObject(shapes[s], tuple.Point(x, y, z))
+}
+
+func normalToWorld(p, s string, x, y, z float64) {
+	tuples[p] = intersection.NormalToWorld(shapes[s], tuple.Vector(x, y, z))
 }

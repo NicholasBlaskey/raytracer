@@ -11,14 +11,6 @@ import (
 	"github.com/nicholasblaskey/raytracer/tuple"
 )
 
-func WorldToObject(s intersection.Intersectable, p tuple.Tuple) tuple.Tuple {
-	if s.GetParent() != nil {
-		p = WorldToObject(s.GetParent(), p)
-	}
-
-	return s.GetTransform().Inv().Mul4x1(p)
-}
-
 type Group struct {
 	Transform matrix.Mat4
 	Material  *material.Material

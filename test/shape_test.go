@@ -12,10 +12,11 @@ import (
 	"github.com/nicholasblaskey/raytracer/ray"
 	"github.com/nicholasblaskey/raytracer/tuple"
 
+	"github.com/nicholasblaskey/raytracer/shape"
+
 	/*
 		"github.com/nicholasblaskey/raytracer/material"
 		"github.com/nicholasblaskey/raytracer/matrix"
-		"github.com/nicholasblaskey/raytracer/shape"
 		"github.com/nicholasblaskey/raytracer/tuple"
 	*/
 
@@ -37,6 +38,11 @@ func shapeSteps(ctx *godog.ScenarioContext) {
 
 	ctx.Step(fmt.Sprintf(`^%s.saved_ray.(origin|direction) = (point|vector)\(%s, %s, %s\)$`,
 		wordRegex, floatRegex, floatRegex, floatRegex), savedRayEqual)
+
+	ctx.Step(fmt.Sprintf(`^%s.parent is nothing$`, wordRegex), shapeParentIsNothing)
+
+	ctx.Step(fmt.Sprintf(`^%s ← world_to_object\(%s, point\(%s, %s, %s\)\)$`,
+		wordRegex, wordRegex, floatRegex, floatRegex, floatRegex), worldToObject)
 }
 
 func createTestShape(s string) {
@@ -45,6 +51,13 @@ func createTestShape(s string) {
 
 func savedRayEqual(s, origOrDir, pointOrVec string, x, y, z float64) error {
 	return rayComponentEqualVecOrPoint("saved_ray", origOrDir, pointOrVec, x, y, z)
+}
+
+func shapeParentIsNothing(s string) error {
+	if shapes[s].GetParent() != nil {
+		return fmt.Errorf("%s.parent expected nil got %v", s, shapes[s].GetParent())
+	}
+	return nil
 }
 
 type testShape struct {
@@ -93,4 +106,8 @@ func (s *testShape) Intersections(origR ray.Ray) []*intersection.Intersection {
 		rays["saved_ray"] = r
 		return nil
 	})
+}
+
+func worldToObject(p, s string, x, y, z float64) {
+	tuples[p] = shape.WorldToObject(shapes[s], tuple.Point(x, y, z))
 }

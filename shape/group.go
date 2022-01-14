@@ -2,6 +2,7 @@ package shape
 
 import (
 	"math"
+	"sort"
 
 	"github.com/nicholasblaskey/raytracer/intersection"
 	"github.com/nicholasblaskey/raytracer/material"
@@ -9,6 +10,14 @@ import (
 	"github.com/nicholasblaskey/raytracer/ray"
 	"github.com/nicholasblaskey/raytracer/tuple"
 )
+
+func WorldToObject(s intersection.Intersectable, p tuple.Tuple) tuple.Tuple {
+	if s.GetParent() != nil {
+		p = WorldToObject(s.GetParent(), p)
+	}
+
+	return s.GetTransform().Inv().Mul4x1(p)
+}
 
 type Group struct {
 	Transform matrix.Mat4
@@ -27,21 +36,22 @@ func NewGroup() *Group {
 }
 
 func (s *Group) localIntersections(r ray.Ray) []*intersection.Intersection {
-	// TODO optimize this when it is clear we don't need to check axis.
-	xTMin, xTMax := s.checkAxis(r.Origin[0], r.Direction[0])
-	yTMin, yTMax := s.checkAxis(r.Origin[1], r.Direction[1])
-	zTMin, zTMax := s.checkAxis(r.Origin[2], r.Direction[2])
-
-	tMin := math.Max(xTMin, math.Max(yTMin, zTMin))
-	tMax := math.Min(xTMax, math.Min(yTMax, zTMax))
-	if tMin > tMax {
-		return nil
+	/*
+		return []*intersection.Intersection{
+			&intersection.Intersection{Obj: s, T: tMin},
+			&intersection.Intersection{Obj: s, T: tMax},
+		}
+	*/
+	var xs []*intersection.Intersection
+	for _, c := range s.Children {
+		xs = append(xs, c.Intersections(r)...)
 	}
 
-	return []*intersection.Intersection{
-		&intersection.Intersection{Obj: s, T: tMin},
-		&intersection.Intersection{Obj: s, T: tMax},
-	}
+	sort.Slice(xs, func(i, j int) bool {
+		return xs[i].T < xs[j].T
+	})
+
+	return xs
 }
 
 func (s *Group) checkAxis(origin, direction float64) (float64, float64) {

@@ -39,6 +39,9 @@ func transformSteps(ctx *godog.ScenarioContext) {
 		wordRegex, floatRegex, floatRegex, floatRegex), matrixEqualToScaling)
 	ctx.Step(fmt.Sprintf(`^%s = translation\(%s, %s, %s\)$`,
 		wordRegex, floatRegex, floatRegex, floatRegex), matrixEqualToTranslation)
+
+	ctx.Step(fmt.Sprintf(`^set_transform\(%s, rotation_y\(%s\)\)$`,
+		wordRegex, floatRegex), setTransformToRotY)
 }
 
 func createTranslation(t string, x, y, z float64) {
@@ -97,4 +100,8 @@ func matrixEqualToTranslation(m string, x, y, z float64) error {
 	expected := fmt.Sprintf("translation(%f, %f, %f)", x, y, z)
 	createTranslation(expected, x, y, z)
 	return matrixEquals(m, expected)
+}
+
+func setTransformToRotY(s string, theta float64) {
+	shapes[s].SetTransform(matrix.RotateY(theta))
 }

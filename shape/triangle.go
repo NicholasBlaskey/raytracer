@@ -40,43 +40,31 @@ func NewTriangle(p0, p1, p2 tuple.Tuple) *Triangle {
 }
 
 func (s *Triangle) localIntersections(r ray.Ray) []*intersection.Intersection {
-	// TODO optimize this when it is clear we don't need to check axis.
-	xTMin, xTMax := s.checkAxis(r.Origin[0], r.Direction[0])
-	yTMin, yTMax := s.checkAxis(r.Origin[1], r.Direction[1])
-	zTMin, zTMax := s.checkAxis(r.Origin[2], r.Direction[2])
-
-	tMin := math.Max(xTMin, math.Max(yTMin, zTMin))
-	tMax := math.Min(xTMax, math.Min(yTMax, zTMax))
-	if tMin > tMax {
+	dirCrossE1 := r.Direction.Cross(s.E1)
+	det := s.E0.Dot(dirCrossE1)
+	if math.Abs(det) < intersection.EPSILON {
 		return nil
 	}
 
+	f := 1.0 / det
+
+	p0ToOrigin := r.Origin.Sub(s.P0)
+	u := f * p0ToOrigin.Dot(dirCrossE1)
+
+	if u < 0 || u > 1 {
+		return nil
+	}
+
+	originCrossE0 := p0ToOrigin.Cross(s.E0)
+	v := f * r.Direction.Dot(originCrossE0)
+	if v < 0 || u+v > 1.0 {
+		return nil
+	}
+
+	t := f * s.E1.Dot(originCrossE0)
 	return []*intersection.Intersection{
-		&intersection.Intersection{Obj: s, T: tMin},
-		&intersection.Intersection{Obj: s, T: tMax},
+		&intersection.Intersection{Obj: s, T: t},
 	}
-}
-
-func (s *Triangle) checkAxis(origin, direction float64) (float64, float64) {
-	tMinNumerator := (-1 - origin)
-	tMaxNumerator := (1 - origin)
-
-	tMin := tMinNumerator / direction
-	tMax := tMaxNumerator / direction
-
-	/* // Is this needed? Or does go handle infintly floating point division?
-	tMin := tMinNumerator * math.Inf(1)
-	tMax := tMaxNumerator * math.Inf(1)
-	if math.Abs(direction) >= intersection.EPSILON {
-		tMin = tMinNumerator / direction
-		tMax = tMaxNumerator / direction
-	}
-	*/
-
-	if tMin > tMax {
-		return tMax, tMin
-	}
-	return tMin, tMax
 }
 
 func (s *Triangle) Intersections(origR ray.Ray) []*intersection.Intersection {
@@ -84,14 +72,7 @@ func (s *Triangle) Intersections(origR ray.Ray) []*intersection.Intersection {
 }
 
 func (s *Triangle) localNormalAt(p tuple.Tuple) tuple.Tuple {
-	xAbs, yAbs, zAbs := math.Abs(p[0]), math.Abs(p[1]), math.Abs(p[2])
-
-	if xAbs >= yAbs && xAbs >= zAbs {
-		return tuple.Vector(p[0], 0.0, 0.0)
-	} else if yAbs > xAbs && yAbs > zAbs {
-		return tuple.Vector(0.0, p[1], 0.0)
-	}
-	return tuple.Vector(0.0, 0.0, p[2])
+	return s.Normal
 }
 
 func (s *Triangle) NormalAt(worldPoint tuple.Tuple) tuple.Tuple {

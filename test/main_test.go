@@ -25,7 +25,7 @@ func TestFeatures(t *testing.T) {
 
 		Options: &godog.Options{
 			Format:   "pretty", //"progress", // pretty
-			Paths:    []string{"../features/triangle.feature"},
+			Paths:    []string{"../features/obj_file.feature"},
 			TestingT: t, // Testing instance that will run subtests.
 			// Stops on the first failure
 			//StopOnFailure: true,
@@ -57,6 +57,7 @@ func initializeScenario(ctx *godog.ScenarioContext) {
 		cylinderBefore(ctx, sc)
 		groupBefore(ctx, sc)
 		triangleBefore(ctx, sc)
+		objBefore(ctx, sc)
 
 		return ctx, nil
 	})
@@ -79,4 +80,5 @@ func initializeScenario(ctx *godog.ScenarioContext) {
 	cylinderSteps(ctx)
 	groupSteps(ctx)
 	triangleSteps(ctx)
+	objSteps(ctx)
 }

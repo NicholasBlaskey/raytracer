@@ -3,6 +3,7 @@ package main_test
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 
 	"github.com/nicholasblaskey/raytracer/obj"
 	"github.com/nicholasblaskey/raytracer/shape"
@@ -20,6 +21,9 @@ func objBefore(ctx context.Context, sc *godog.Scenario) (context.Context, error)
 }
 
 func objSteps(ctx *godog.ScenarioContext) {
+	ctx.Step(fmt.Sprintf(`^%s ← the file "%s\.obj"$`, wordRegex, wordRegex),
+		fileIntoString)
+
 	ctx.Step(fmt.Sprintf(`^%s ← a file containing:$`, wordRegex), createFileString)
 	ctx.Step(fmt.Sprintf(`^%s ← parse_obj_file\(%s\)$`, wordRegex, wordRegex),
 		parseObjectFile)
@@ -33,12 +37,19 @@ func objSteps(ctx *godog.ScenarioContext) {
 
 	ctx.Step(fmt.Sprintf(`^%s ← %s.default_group$`, wordRegex, wordRegex),
 		assignParserDefaultGroup)
-	ctx.Step(fmt.Sprintf(`^%s ← (first|second) child of %s$`,
+	ctx.Step(fmt.Sprintf(`^%s ← (first|second|third) child of %s$`,
 		wordRegex, wordRegex), assignChildOfGroup)
+	ctx.Step(fmt.Sprintf(`^%s ← "%s" from %s$`,
+		wordRegex, wordRegex, wordRegex), getNamedGroupFromParser)
 
 	ctx.Step(fmt.Sprintf(`^%s.%s = %s.vertices\[%s\]$`,
 		wordRegex, wordRegex, wordRegex, intRegex),
 		trianglePointEqualToParserVert)
+
+	ctx.Step(fmt.Sprintf(`^%s ← obj_to_group\(%s\)$`,
+		wordRegex, wordRegex), objToGroup)
+	ctx.Step(fmt.Sprintf(`^%s includes "%s" from %s$`,
+		wordRegex, wordRegex, wordRegex), groupIncludesParserGroup)
 }
 
 func createFileString(f string, contents *godog.DocString) {
@@ -87,6 +98,8 @@ func assignChildOfGroup(res, nth, g string) error {
 		i = 0
 	case "second":
 		i = 1
+	case "third":
+		i = 2
 	default:
 		return fmt.Errorf("Should not happen")
 	}
@@ -111,4 +124,44 @@ func trianglePointEqualToParserVert(tri, point, parser string, i int) error {
 	expected := fmt.Sprintf("%s.vertices[%d]", parser, i)
 	tuples[expected] = objParsers[parser].Vertices[i]
 	return trianglePointEqualTo(tri, point, expected)
+}
+
+func fileIntoString(f, fileName string) error {
+	b, err := ioutil.ReadFile(fileName + ".obj")
+	if err != nil {
+		return err
+	}
+
+	fileStrings[f] = string(b)
+	return nil
+}
+
+func getNamedGroupFromParser(res, groupName, parser string) error {
+	group := objParsers[parser].Groups[groupName]
+	if group == nil {
+		return fmt.Errorf("expected %s to have group %s, but did not", parser, groupName)
+	}
+
+	shapes[res] = group
+	return nil
+}
+
+func objToGroup(res, parser string) {
+	shapes[res] = objParsers[parser].ToGroup()
+}
+
+func groupIncludesParserGroup(group, nameOfGroup, parser string) error {
+	parserGroup := objParsers[parser].Groups[nameOfGroup]
+
+	found := false
+	for _, c := range shapes[group].(*shape.Group).Children {
+		if c == parserGroup {
+			found = true
+		}
+	}
+
+	if !found {
+		return fmt.Errorf("expected %s to have %s from %s", group, nameOfGroup, parser)
+	}
+	return nil
 }

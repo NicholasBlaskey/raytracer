@@ -21,7 +21,7 @@ func triangleSteps(ctx *godog.ScenarioContext) {
 		wordRegex, floatRegex, floatRegex, floatRegex, floatRegex, floatRegex, floatRegex,
 		floatRegex, floatRegex, floatRegex), createTriangleFloat)
 
-	ctx.Step(fmt.Sprintf(`^%s.(p1|p2|p3) = %s$`, wordRegex, wordRegex),
+	ctx.Step(fmt.Sprintf(`^%s.(p1|p2|p3|n1|n2|n3) = %s$`, wordRegex, wordRegex),
 		trianglePointEqualTo)
 	ctx.Step(fmt.Sprintf(`^%s.(e1|e2|normal) = vector\(%s, %s, %s\)$`,
 		wordRegex, floatRegex, floatRegex, floatRegex), triangleVectorEqualTo)
@@ -39,12 +39,32 @@ func createTriangleFloat(t string, p0X, p0Y, p0Z, p1X, p1Y, p1Z, p2X, p2Y, p2Z f
 }
 
 func trianglePointEqualTo(t, whichPoint, expected string) error {
-	tri := shapes[t].(*shape.Triangle)
-	actual := tri.P0
-	if whichPoint == "p2" {
-		actual = tri.P1
-	} else if whichPoint == "p3" {
-		actual = tri.P2
+	var actual tuple.Tuple
+	switch whichPoint {
+	case "p1":
+		if tri, ok := shapes[t].(*shape.Triangle); ok {
+			actual = tri.P0
+		} else {
+			actual = shapes[t].(*shape.SmoothTriangle).P0
+		}
+	case "p2":
+		if tri, ok := shapes[t].(*shape.Triangle); ok {
+			actual = tri.P1
+		} else {
+			actual = shapes[t].(*shape.SmoothTriangle).P1
+		}
+	case "p3":
+		if tri, ok := shapes[t].(*shape.Triangle); ok {
+			actual = tri.P2
+		} else {
+			actual = shapes[t].(*shape.SmoothTriangle).P2
+		}
+	case "n1":
+		actual = shapes[t].(*shape.SmoothTriangle).N0
+	case "n2":
+		actual = shapes[t].(*shape.SmoothTriangle).N1
+	case "n3":
+		actual = shapes[t].(*shape.SmoothTriangle).N2
 	}
 
 	return isEqualTuple(expected, actual[0], actual[1], actual[2], actual[3])

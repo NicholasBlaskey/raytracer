@@ -13,10 +13,15 @@ type Parser struct {
 	LinesIgnored int
 	Vertices     []tuple.Tuple
 	DefaultGroup *shape.Group
+	Groups       map[string]*shape.Group
+	curGroup     *shape.Group
 }
 
 func Parse(s string) (*Parser, error) {
-	p := &Parser{DefaultGroup: shape.NewGroup()}
+	p := &Parser{DefaultGroup: shape.NewGroup(),
+		Groups: make(map[string]*shape.Group)}
+	p.Groups["DefaultGroup"] = p.DefaultGroup
+	p.curGroup = p.DefaultGroup
 
 	for _, line := range strings.Split(s, "\n") {
 		fmt.Println(line)
@@ -52,15 +57,43 @@ func Parse(s string) (*Parser, error) {
 				verts = append(verts, v-1)
 			}
 
+			// Triangle case.
 			if len(verts) == 3 {
-				p.DefaultGroup.AddChild(shape.NewTriangle(
+				p.curGroup.AddChild(shape.NewTriangle(
 					p.Vertices[verts[0]], p.Vertices[verts[1]], p.Vertices[verts[2]]),
 				)
+				continue
 			}
+
+			// Polygon case (fan triangulazation).
+			for i := 1; i < len(verts)-1; i++ {
+				p.curGroup.AddChild(shape.NewTriangle(
+					p.Vertices[verts[0]], p.Vertices[verts[i]], p.Vertices[verts[i+1]]))
+			}
+		case 'g':
+			groupName := strings.Trim(line[2:], " \t\r")
+			p.curGroup = shape.NewGroup()
+			p.Groups[groupName] = p.curGroup
+
 		default:
 			p.LinesIgnored++
 		}
 	}
 
 	return p, nil
+}
+
+func (p *Parser) ToGroup() *shape.Group {
+	g := shape.NewGroup()
+	for _, group := range p.Groups {
+		g.AddChild(group)
+
+		/*
+			// Simplying assuming groups dont contain groups in models for now!
+			for _, c := range group.Children {
+				g.AddChild(c)
+			}
+		*/
+	}
+	return g
 }

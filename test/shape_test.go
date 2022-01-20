@@ -94,7 +94,7 @@ func (s *testShape) SetParent(p intersection.Intersectable) {
 	s.Parent = p
 }
 
-func (s *testShape) NormalAt(t tuple.Tuple) tuple.Tuple {
+func (s *testShape) NormalAt(t tuple.Tuple, i *intersection.Intersection) tuple.Tuple {
 	return intersection.NormalAt(s, t,
 		func(objectPoint tuple.Tuple) tuple.Tuple {
 			return tuple.Vector(objectPoint[0], objectPoint[1], objectPoint[2]).Normalize()

@@ -58,7 +58,7 @@ func (s *Sphere) localNormalAt(objectPoint tuple.Tuple) tuple.Tuple {
 }
 
 // TODO See if there is a performance hit doing this.
-func (s *Sphere) NormalAt(worldPoint tuple.Tuple) tuple.Tuple {
+func (s *Sphere) NormalAt(worldPoint tuple.Tuple, i *intersection.Intersection) tuple.Tuple {
 	return intersection.NormalAt(s, worldPoint, s.localNormalAt)
 }
 

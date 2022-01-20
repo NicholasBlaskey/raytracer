@@ -66,7 +66,7 @@ func (s *SmoothTriangle) localIntersections(r ray.Ray) []*intersection.Intersect
 
 	t := f * s.E1.Dot(originCrossE0)
 	return []*intersection.Intersection{
-		&intersection.Intersection{Obj: s, T: t},
+		&intersection.Intersection{Obj: s, T: t, U: u, V: v},
 	}
 }
 
@@ -74,12 +74,14 @@ func (s *SmoothTriangle) Intersections(origR ray.Ray) []*intersection.Intersecti
 	return intersection.Intersections(s, origR, s.localIntersections)
 }
 
-func (s *SmoothTriangle) localNormalAt(p tuple.Tuple) tuple.Tuple {
-	return s.Normal
-}
+func (s *SmoothTriangle) NormalAt(worldPoint tuple.Tuple, i *intersection.Intersection) tuple.Tuple {
+	localNormalAt := func(p tuple.Tuple) tuple.Tuple {
+		return s.N1.Mul(i.U).Add(
+			s.N2.Mul(i.V)).Add(
+			s.N0.Mul(1 - i.U - i.V))
+	}
 
-func (s *SmoothTriangle) NormalAt(worldPoint tuple.Tuple) tuple.Tuple {
-	return intersection.NormalAt(s, worldPoint, s.localNormalAt)
+	return intersection.NormalAt(s, worldPoint, localNormalAt)
 }
 
 func (s *SmoothTriangle) GetMaterial() *material.Material {

@@ -42,7 +42,7 @@ func (s *Plane) localNormalAt(objectPoint tuple.Tuple) tuple.Tuple {
 }
 
 // TODO See if there is a performance hit doing this.
-func (s *Plane) NormalAt(worldPoint tuple.Tuple) tuple.Tuple {
+func (s *Plane) NormalAt(worldPoint tuple.Tuple, i *intersection.Intersection) tuple.Tuple {
 	return intersection.NormalAt(s, worldPoint, s.localNormalAt)
 }
 

@@ -156,7 +156,7 @@ func sphereTransformEqualsTranslate(s string, x, y, z float64) error {
 }
 
 func sphereNormalAt(n, s string, x, y, z float64) {
-	tuples[n] = shapes[s].NormalAt(tuple.Point(x, y, z))
+	tuples[n] = shapes[s].NormalAt(tuple.Point(x, y, z), nil)
 }
 
 func getSphereMaterial(m, s string) {

@@ -75,7 +75,7 @@ func (s *Triangle) localNormalAt(p tuple.Tuple) tuple.Tuple {
 	return s.Normal
 }
 
-func (s *Triangle) NormalAt(worldPoint tuple.Tuple) tuple.Tuple {
+func (s *Triangle) NormalAt(worldPoint tuple.Tuple, i *intersection.Intersection) tuple.Tuple {
 	return intersection.NormalAt(s, worldPoint, s.localNormalAt)
 }
 

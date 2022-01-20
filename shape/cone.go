@@ -128,7 +128,7 @@ func (s *Cone) localNormalAt(p tuple.Tuple) tuple.Tuple {
 	return tuple.Vector(p[0], y, p[2])
 }
 
-func (s *Cone) NormalAt(worldPoint tuple.Tuple) tuple.Tuple {
+func (s *Cone) NormalAt(worldPoint tuple.Tuple, i *intersection.Intersection) tuple.Tuple {
 	return intersection.NormalAt(s, worldPoint, s.localNormalAt)
 }
 

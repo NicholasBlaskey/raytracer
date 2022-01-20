@@ -75,7 +75,7 @@ func (s *Cube) localNormalAt(p tuple.Tuple) tuple.Tuple {
 	return tuple.Vector(0.0, 0.0, p[2])
 }
 
-func (s *Cube) NormalAt(worldPoint tuple.Tuple) tuple.Tuple {
+func (s *Cube) NormalAt(worldPoint tuple.Tuple, i *intersection.Intersection) tuple.Tuple {
 	return intersection.NormalAt(s, worldPoint, s.localNormalAt)
 }
 

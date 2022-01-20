@@ -36,7 +36,7 @@ func localNormalAt(n, p string, x, y, z float64) {
 		panic("Does not support non ident transforms yet")
 	}
 
-	tuples[n] = shapes[p].NormalAt(tuple.Point(x, y, z))
+	tuples[n] = shapes[p].NormalAt(tuple.Point(x, y, z), nil)
 }
 
 func localIntersect(xs, p, r string) {

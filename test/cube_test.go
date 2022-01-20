@@ -22,7 +22,7 @@ func cubeSteps(ctx *godog.ScenarioContext) {
 }
 
 func localNormalAtVariable(n, s, p string) {
-	tuples[n] = shapes[s].NormalAt(tuples[p])
+	tuples[n] = shapes[s].NormalAt(tuples[p], nil)
 }
 
 func createCube(c string) {

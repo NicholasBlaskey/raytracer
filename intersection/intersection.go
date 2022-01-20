@@ -24,7 +24,7 @@ type Intersectable interface {
 	GetParent() Intersectable
 	SetParent(Intersectable)
 	//
-	NormalAt(tuple.Tuple) tuple.Tuple
+	NormalAt(tuple.Tuple, *Intersection) tuple.Tuple
 	Intersections(ray.Ray) []*Intersection
 }
 
@@ -73,10 +73,12 @@ func NormalAt(i Intersectable, worldPoint tuple.Tuple,
 type Intersection struct {
 	T   float64
 	Obj Intersectable
+	U   float64
+	V   float64
 }
 
 func New(t float64, obj Intersectable) *Intersection {
-	return &Intersection{t, obj}
+	return &Intersection{T: t, Obj: obj}
 }
 
 // See if this function is useful as syntatic sugar?
@@ -118,7 +120,7 @@ func (i *Intersection) PrepareComputations(r ray.Ray, xs []*Intersection) *Compu
 	c.Point = r.PositionAt(c.T)
 
 	c.Eyev = r.Direction.Mul(-1)
-	c.Normalv = c.Obj.NormalAt(c.Point)
+	c.Normalv = c.Obj.NormalAt(c.Point, i)
 
 	if c.Normalv.Dot(c.Eyev) < 0.0 {
 		c.Inside = true
@@ -185,4 +187,9 @@ func (c *Computations) Schlick() float64 {
 	r0 = r0 * r0
 
 	return r0 + (1-r0)*math.Pow((1-cos), 5.0)
+}
+
+// TODO What should this do?
+func WithUV(t float64, s Intersectable, u, v float64) *Intersection {
+	return &Intersection{t, s, u, v}
 }

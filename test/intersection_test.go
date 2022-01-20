@@ -36,8 +36,10 @@ func intersectionSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^%s ← hit\(%s\)$`, wordRegex, wordRegex),
 		intersectionCreateHit)
 
-	ctx.Step(fmt.Sprintf(`^%s\.t = %s$`, wordRegex, floatRegex),
-		intersectionTimeEqual)
+	ctx.Step(fmt.Sprintf(`^%s\.(t|u|v) = %s$`, wordRegex, floatRegex),
+		intersectionComponentEqual)
+	ctx.Step(fmt.Sprintf(`^%s\[%s\]\.(u|v) = %s$`, wordRegex, intRegex, floatRegex),
+		intersectionsComponentEqual)
 	ctx.Step(fmt.Sprintf(`^%s.object = %s$`, wordRegex, wordRegex),
 		intersectionObjectEqual)
 
@@ -79,15 +81,39 @@ func intersectionSteps(ctx *godog.ScenarioContext) {
 
 	ctx.Step(fmt.Sprintf(`^%s ← schlick\(%s\)$`,
 		wordRegex, wordRegex), schlick)
+
+	ctx.Step(fmt.Sprintf(`^%s ← intersection_with_uv\(%s, %s, %s, %s\)$`,
+		wordRegex, floatRegex, wordRegex, floatRegex, floatRegex), intersectionWithUV)
+	ctx.Step(fmt.Sprintf("%s.(u|v) = %s", wordRegex, floatRegex), uvEqualTo)
 }
 
 func intersectionCreate(i string, t float64, obj string) {
 	intersectionObjects[i] = intersection.New(t, shapes[obj])
 }
 
-func intersectionTimeEqual(i string, t float64) error {
-	if actual := intersectionObjects[i].T; actual != t {
-		return fmt.Errorf("%s.t expected %f got %f", i, t, actual)
+func intersectionComponentEqual(i, component string, expected float64) error {
+	actual := intersectionObjects[i].T
+	if component == "u" {
+		actual = intersectionObjects[i].U
+	} else if component == "v" {
+		actual = intersectionObjects[i].V
+	}
+
+	if actual != expected {
+		return fmt.Errorf("%s.%s expected %f got %f", i, component, expected, actual)
+	}
+	return nil
+}
+
+func intersectionsComponentEqual(xs string, index int, uOrV string, expected float64) error {
+	actual := intersections[xs][index].U
+	if uOrV == "v" {
+		actual = intersections[xs][index].V
+	}
+
+	if !compareFloat(actual, expected) {
+		return fmt.Errorf("%s[%d].%s expected %f got %f",
+			xs, index, uOrV, expected, actual)
 	}
 	return nil
 }
@@ -122,7 +148,8 @@ func aggregateIntersectionsVariousIntersections(res, params string) {
 			panic(err)
 		}
 
-		intersects = append(intersects, &intersection.Intersection{t, shapes[paramSplit[1]]})
+		intersects = append(intersects, &intersection.Intersection{
+			T: t, Obj: shapes[paramSplit[1]]})
 	}
 
 	intersections[res] = intersection.Aggregate(intersects...)
@@ -285,4 +312,20 @@ func prepareComputationsXSs(res, xs string, index int, r, intersects string) {
 
 func schlick(res, comps string) {
 	floats[res] = computations[comps].Schlick()
+}
+
+func intersectionWithUV(res string, t float64, s string, u, v float64) {
+	intersectionObjects[res] = intersection.WithUV(t, shapes[s], u, v)
+}
+
+func uvEqualTo(i, uOrV string, expected float64) error {
+	actual := intersectionObjects[i].U
+	if uOrV == "v" {
+		actual = intersectionObjects[i].V
+	}
+
+	if expected != actual {
+		return fmt.Errorf("%s.%s expected %f got %f", i, uOrV, expected, actual)
+	}
+	return nil
 }

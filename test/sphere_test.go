@@ -37,6 +37,7 @@ func sphereSteps(ctx *godog.ScenarioContext) {
 		intersectCountEqual)
 	ctx.Step(fmt.Sprintf(`^%s\[%s\](?:.t|) = %s`, wordRegex, intRegex, floatRegex),
 		intersectValueEqual)
+
 	ctx.Step(fmt.Sprintf(`^%s\[%s\].object = %s`, wordRegex, intRegex, wordRegex),
 		intersectObjectEqual)
 

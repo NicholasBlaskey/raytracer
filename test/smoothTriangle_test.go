@@ -21,7 +21,6 @@ func smoothTriangleSteps(ctx *godog.ScenarioContext) {
 }
 
 func createSmoothTriangle(t, p0, p1, p2, n0, n1, n2 string) {
-	fmt.Println("CALLED?")
 	shapes[t] = shape.NewSmoothTriangle(
 		tuples[p0], tuples[p1], tuples[p2],
 		tuples[n0], tuples[n1], tuples[n2])

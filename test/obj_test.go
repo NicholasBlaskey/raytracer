@@ -34,6 +34,9 @@ func objSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^%s.vertices\[%s\] = point\(%s, %s, %s\)$`,
 		wordRegex, intRegex, floatRegex, floatRegex, floatRegex),
 		parserVertexAtEqualTo)
+	ctx.Step(fmt.Sprintf(`^%s.normals\[%s\] = vector\(%s, %s, %s\)$`,
+		wordRegex, intRegex, floatRegex, floatRegex, floatRegex),
+		parserNormalAtEqualTo)
 
 	ctx.Step(fmt.Sprintf(`^%s ← %s.default_group$`, wordRegex, wordRegex),
 		assignParserDefaultGroup)
@@ -45,6 +48,9 @@ func objSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^%s.%s = %s.vertices\[%s\]$`,
 		wordRegex, wordRegex, wordRegex, intRegex),
 		trianglePointEqualToParserVert)
+	ctx.Step(fmt.Sprintf(`^%s.%s = %s.normals\[%s\]$`,
+		wordRegex, wordRegex, wordRegex, intRegex),
+		smoothTriangleNormalEqualTo)
 
 	ctx.Step(fmt.Sprintf(`^%s ← obj_to_group\(%s\)$`,
 		wordRegex, wordRegex), objToGroup)
@@ -87,6 +93,19 @@ func parserVertexAtEqualTo(p string, i int, x, y, z float64) error {
 	return isEqualTuple(actual, x, y, z, tuples[actual][3])
 }
 
+func parserNormalAtEqualTo(p string, i int, x, y, z float64) error {
+	i--
+	if i >= len(objParsers[p].Normals) {
+		return fmt.Errorf("%s.normals[%d] out of bounds (len(%s.normals) = %d)",
+			p, i, p, len(objParsers[p].Normals))
+	}
+
+	actual := fmt.Sprintf("%s.normals[%d]", p, i)
+	tuples[actual] = objParsers[p].Normals[i]
+
+	return isEqualTuple(actual, x, y, z, tuples[actual][3])
+}
+
 func assignParserDefaultGroup(g, p string) {
 	shapes[g] = objParsers[p].DefaultGroup
 }
@@ -112,6 +131,27 @@ func assignChildOfGroup(res, nth, g string) error {
 
 	shapes[res] = children[i]
 	return nil
+}
+
+func smoothTriangleNormalEqualTo(tri, point, parser string, i int) error {
+	i--
+	if i >= len(objParsers[parser].Normals) {
+		return fmt.Errorf("%s.normals[%d] out of bounds (len(%s.normals) = %d)",
+			parser, i, parser, len(objParsers[parser].Normals))
+	}
+
+	expected := fmt.Sprintf("%s.normals[%d]", parser, i)
+	tuples[expected] = objParsers[parser].Normals[i]
+
+	t := shapes[tri].(*shape.SmoothTriangle)
+	actual := t.N0
+	if point == "n2" {
+		actual = t.N1
+	} else if point == "n3" {
+		actual = t.N2
+	}
+
+	return isEqualTuple(expected, actual[0], actual[1], actual[2], actual[3])
 }
 
 func trianglePointEqualToParserVert(tri, point, parser string, i int) error {

@@ -22,6 +22,7 @@ type Group struct {
 func (s *Group) AddChild(c intersection.Intersectable) {
 	c.SetParent(s)
 	s.Children = append(s.Children, c)
+	s.calculateBoundingBox()
 }
 
 func NewGroup() *Group {
@@ -113,15 +114,35 @@ func (s *Group) SetParent(p intersection.Intersectable) {
 	s.Parent = p
 }
 
+func (s *Group) calculateBoundingBox() {
+	// Know the only way we call this is in add child,
+	// so s.Children will always have len > 1.
+	b := s.Children[0].Bounds()
+	min, max := b.Min, b.Max
+	for _, c := range s.Children[1:] {
+		bounds := c.Bounds()
+		min, max := bounds.Min, bounds.Max
+
+		// Get all 8 points of the children's bounding box.
+
+		p := min
+		p := max
+
+		/*
+			for x := -1; x <= +1; x++ {
+				for y := -1; y <= +1; y++ {
+					if x == 0 && y == 0 {
+						continue
+					}
+
+
+				}
+			}
+		*/
+
+	}
+}
+
 func (s *Group) Bounds() intersection.Bounds {
-	// TODO implmenet this correctly.
-	//min := tuple.Point(-1.0, -1.0, -1.0)
-	//max := tuple.Point(+1.0, +1.0, +1.0)
-
-	min := tuple.Point(-10, -10, -10) //math.Inf(-1), math.Inf(-1), math.Inf(-1))
-	max := tuple.Point(10, 10, 10)    //math.Inf(+1), math.Inf(+1), math.Inf(+1))
-
-	s.boundingBox = intersection.Bounds{min, max}
-
 	return s.boundingBox
 }

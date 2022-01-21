@@ -31,17 +31,8 @@ func NewSmoothTriangle(p0, p1, p2, n0, n1, n2 tuple.Tuple) *SmoothTriangle {
 	e1 := p2.Sub(p0)
 	normal := e1.Cross(e0).Normalize()
 
-	min := tuple.Point(
-		math.Min(p0[0], math.Min(p1[0], p2[0])),
-		math.Min(p0[1], math.Min(p1[1], p2[1])),
-		math.Min(p0[2], math.Min(p1[2], p2[2])),
-	)
-	max := tuple.Point(
-		math.Max(p0[0], math.Max(p1[0], p2[0])),
-		math.Max(p0[1], math.Max(p1[1], p2[1])),
-		math.Max(p0[2], math.Max(p1[2], p2[2])),
-	)
-
+	min := p0.Min(p1).Min(p2)
+	max := p0.Max(p1).Max(p2)
 	return &SmoothTriangle{
 		Transform: matrix.Ident4(),
 		Material:  material.New(),

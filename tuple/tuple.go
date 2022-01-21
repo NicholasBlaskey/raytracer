@@ -73,3 +73,19 @@ func (t Tuple) Cross(x Tuple) Tuple {
 func (t Tuple) Reflect(n Tuple) Tuple {
 	return t.Sub(n.Mul(2 * t.Dot(n)))
 }
+
+func (a Tuple) Min(b Tuple) Tuple {
+	return Point(
+		math.Min(a[0], b[0]),
+		math.Min(a[1], b[1]),
+		math.Min(a[2], b[2]),
+	)
+}
+
+func (a Tuple) Max(b Tuple) Tuple {
+	return Point(
+		math.Max(a[0], b[0]),
+		math.Max(a[1], b[1]),
+		math.Max(a[2], b[2]),
+	)
+}

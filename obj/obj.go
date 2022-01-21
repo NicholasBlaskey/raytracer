@@ -1,6 +1,7 @@
 package obj
 
 import (
+	"io/ioutil"
 	"strconv"
 	"strings"
 
@@ -15,6 +16,20 @@ type Parser struct {
 	DefaultGroup *shape.Group
 	Groups       map[string]*shape.Group
 	curGroup     *shape.Group
+}
+
+func FileToGroup(filePath string) (*shape.Group, error) {
+	b, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	p, err := Parse(string(b))
+	if err != nil {
+		return nil, err
+	}
+
+	return p.ToGroup(), nil
 }
 
 func Parse(s string) (*Parser, error) {
@@ -39,7 +54,7 @@ func Parse(s string) (*Parser, error) {
 				vert = tuple.Vector(0.0, 0.0, 0.0)
 			}
 
-			verts := strings.Split(line[startIndex:], " ")
+			verts := strings.Split(strings.Trim(line[startIndex:], "\n\t\r "), " ")
 
 			if vert[0], err = strconv.ParseFloat(verts[0], 64); err != nil {
 				return nil, err

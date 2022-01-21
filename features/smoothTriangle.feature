@@ -34,3 +34,4 @@ Scenario: Preparing the normal on a smooth triangle
     And xs ← intersections(i)
     And comps ← prepare_computations(i, r, xs)
   Then comps.normalv = vector(-0.5547, 0.83205, 0.0)
+

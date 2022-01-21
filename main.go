@@ -1,12 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/nicholasblaskey/raytracer/camera"
 	"github.com/nicholasblaskey/raytracer/light"
-	//"github.com/nicholasblaskey/raytracer/material"
+	"github.com/nicholasblaskey/raytracer/material"
 	"github.com/nicholasblaskey/raytracer/matrix"
+	"github.com/nicholasblaskey/raytracer/obj"
 	"github.com/nicholasblaskey/raytracer/shape"
 	"github.com/nicholasblaskey/raytracer/tuple"
 	"github.com/nicholasblaskey/raytracer/world"
@@ -413,6 +415,7 @@ func main() {
 }
 */
 
+/*
 func hexagonCorner() *shape.Sphere {
 	s := shape.NewSphere()
 	s.SetTransform(matrix.Translate(0.0, 0.0, -1.0).Mul4(
@@ -472,4 +475,82 @@ func main() {
 		panic(err)
 	}
 
+}
+*/
+
+// Draw teapot.
+func main() {
+	//n := 600
+	n := 200
+	checker := material.CheckerPattern(
+		tuple.Color(1.0, 1.0, 1.0),
+		tuple.Color(0.0, 0.0, 0.0),
+	)
+
+	stripes := material.StripePattern(
+		tuple.Color(1.0, 1.0, 1.0),
+		tuple.Color(0.0, 0.0, 0.0),
+	)
+
+	floor := shape.NewPlane()
+	floor.Material.Color = tuple.Color(1.0, 0.9, 0.9)
+	floor.Material.Specular = 0.0
+	floor.Material.Pattern = checker
+
+	leftWall := shape.NewPlane()
+	leftWall.Transform = matrix.Translate(0.0, 0.0, 10.0).Mul4(
+		matrix.RotateX(math.Pi / 2))
+	leftWall.Material.Pattern = checker
+
+	backWall := shape.NewPlane()
+	backWall.Transform = matrix.Translate(0.0, 0.0, -12.0).Mul4(
+		matrix.RotateX(math.Pi / 2))
+	backWall.Material.Pattern = stripes
+
+	/*
+		glass := shape.NewGlassSphere()
+		glass.Transform = matrix.Translate(-0.5, 1.0, -1.0).Mul4(
+			matrix.Scale(1.0, 1.0, 1.0))
+		//glass.Material.Color = tuple.Color(1.0, 1.0, 1.0) //tuple.Color(0.1, 1.0, 0.5)
+		glass.Material.Diffuse = 0.5
+		//glass.Material.Specular = 0.3
+		//glass.Material.Reflective = 0.5
+
+		air := shape.NewGlassSphere()a
+		air.Transform = matrix.Translate(-0.5, 1.0, -1.0).Mul4(
+			matrix.Scale(0.3, 0.3, 0.3))
+		air.Material.Color = tuple.Color(1.0, 1.0, 1.0)
+		air.Material.RefractiveIndex = 1.02
+		air.Material.Transparency = 0.8
+	*/
+
+	fmt.Println("LOAD TEAPOT")
+	teapot, err := obj.FileToGroup("models/lowResTeapot.obj")
+	teapot.Transform = matrix.Translate(0.0, 0.45, 0.0).Mul4(
+		matrix.RotateX(-math.Pi / 2)).Mul4(
+		matrix.Scale(0.10, 0.10, 0.10))
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("END LOAD TEAPOT")
+	//teapot.Material.Transparency = 1.0
+	//teapot.Material.RefractiveIndex = 1.52
+	//teapot.Material.Reflective = 1.0
+
+	w := world.New()
+	l := light.NewPointLight(tuple.Point(-10.0, 10.0, -10.0),
+		tuple.Color(1.0, 1.0, 1.0))
+	w.Light = &l
+	w.Objects = append(w.Objects, floor, leftWall, backWall, teapot)
+
+	c := camera.New(n*2, n, math.Pi/3.0)
+	c.Transform = matrix.View(
+		tuple.Point(0.0, 1.5, -5.0),
+		tuple.Point(0.0, 1.0, 0.0),
+		tuple.Vector(0.0, 1.0, 0.0))
+
+	canv := c.Render(w)
+	if err := canv.Save("test.ppm"); err != nil {
+		panic(err)
+	}
 }

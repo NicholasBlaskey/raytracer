@@ -525,10 +525,11 @@ func main() {
 	*/
 
 	fmt.Println("LOAD TEAPOT")
-	teapot, err := obj.FileToGroup("models/lowResTeapot.obj")
-	teapot.Transform = matrix.Translate(0.0, 0.45, 0.0).Mul4(
+	teapot, err := obj.FileToBoundingBox("models/lowResTeapot.obj")
+	//teapot, err := obj.FileToBoundingBox("models/lowResTeapot.obj")
+	teapot.SetTransform(matrix.Translate(0.0, 0.45, 0.0).Mul4(
 		matrix.RotateX(-math.Pi / 2)).Mul4(
-		matrix.Scale(0.10, 0.10, 0.10))
+		matrix.Scale(0.10, 0.10, 0.10)))
 	if err != nil {
 		panic(err)
 	}

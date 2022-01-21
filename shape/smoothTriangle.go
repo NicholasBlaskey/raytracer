@@ -107,3 +107,18 @@ func (s *SmoothTriangle) GetParent() intersection.Intersectable {
 func (s *SmoothTriangle) SetParent(p intersection.Intersectable) {
 	s.Parent = p
 }
+
+func (s *SmoothTriangle) Bounds() intersection.Bounds {
+	min := tuple.Point(
+		math.Min(s.P0[0], math.Min(s.P1[0], s.P2[0])),
+		math.Min(s.P0[1], math.Min(s.P1[1], s.P2[1])),
+		math.Min(s.P0[2], math.Min(s.P1[2], s.P2[2])),
+	)
+	max := tuple.Point(
+		math.Max(s.P0[0], math.Max(s.P1[0], s.P2[0])),
+		math.Max(s.P0[1], math.Max(s.P1[1], s.P2[1])),
+		math.Max(s.P0[2], math.Max(s.P1[2], s.P2[2])),
+	)
+
+	return intersection.Bounds{min, max}
+}

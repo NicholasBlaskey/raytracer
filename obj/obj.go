@@ -32,15 +32,6 @@ func FileToGroup(filePath string) (*shape.Group, error) {
 	return p.ToGroup(), nil
 }
 
-func FileToBoundingBox(filePath string) (*shape.BoundingBox, error) {
-	g, err := FileToGroup(filePath)
-	if err != nil {
-		return nil, err
-	}
-
-	return shape.NewBoundingBox(g), nil
-}
-
 func Parse(s string) (*Parser, error) {
 	p := &Parser{DefaultGroup: shape.NewGroup(),
 		Groups: make(map[string]*shape.Group)}

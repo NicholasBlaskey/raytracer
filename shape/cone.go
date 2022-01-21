@@ -155,3 +155,13 @@ func (s *Cone) GetParent() intersection.Intersectable {
 func (s *Cone) SetParent(p intersection.Intersectable) {
 	s.Parent = p
 }
+
+func (s *Cone) Bounds() intersection.Bounds {
+	// x and y shouldn't be +1.0
+	// Since our radius grows past 1 potentially forever.
+	min := tuple.Point(-1.0, s.Max, -1.0)
+	max := tuple.Point(+1.0, s.Min, +1.0)
+
+	panic("Not implmeneted correctly")
+	return intersection.Bounds{min, max}
+}

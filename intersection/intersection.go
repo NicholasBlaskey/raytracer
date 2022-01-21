@@ -12,6 +12,11 @@ import (
 
 const EPSILON = 0.000000001 // TODO expose this and use it system wide.
 
+type Bounds struct {
+	Min tuple.Tuple
+	Max tuple.Tuple
+}
+
 type Intersectable interface {
 	GetTransform() matrix.Mat4
 	SetTransform(matrix.Mat4)
@@ -26,6 +31,8 @@ type Intersectable interface {
 	//
 	NormalAt(tuple.Tuple, *Intersection) tuple.Tuple
 	Intersections(ray.Ray) []*Intersection
+	//
+	Bounds() Bounds
 }
 
 func Intersections(i Intersectable, r ray.Ray,

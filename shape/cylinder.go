@@ -133,3 +133,9 @@ func (s *Cylinder) GetParent() intersection.Intersectable {
 func (s *Cylinder) SetParent(p intersection.Intersectable) {
 	s.Parent = p
 }
+
+func (s *Cylinder) Bounds() intersection.Bounds {
+	min := tuple.Point(-1.0, s.Max, -1.0)
+	max := tuple.Point(+1.0, s.Min, +1.0)
+	return intersection.Bounds{min, max}
+}

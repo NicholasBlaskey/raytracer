@@ -69,3 +69,9 @@ func (s *Plane) GetParent() intersection.Intersectable {
 func (s *Plane) SetParent(p intersection.Intersectable) {
 	s.Parent = p
 }
+
+func (s *Plane) Bounds() intersection.Bounds {
+	min := tuple.Point(math.Inf(-1.0), 0.0, math.Inf(-1.0))
+	max := tuple.Point(math.Inf(+1.0), 0.0, math.Inf(+1.0))
+	return intersection.Bounds{min, max}
+}

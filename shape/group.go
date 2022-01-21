@@ -110,3 +110,10 @@ func (s *Group) GetParent() intersection.Intersectable {
 func (s *Group) SetParent(p intersection.Intersectable) {
 	s.Parent = p
 }
+
+func (s *Group) Bounds() intersection.Bounds {
+	// TODO implmenet this correctly.
+	min := tuple.Point(0.0, 0.0, 0.0)
+	max := tuple.Point(0.0, 0.0, 0.0)
+	return intersection.Bounds{min, max}
+}

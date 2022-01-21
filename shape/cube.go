@@ -102,3 +102,9 @@ func (s *Cube) GetParent() intersection.Intersectable {
 func (s *Cube) SetParent(p intersection.Intersectable) {
 	s.Parent = p
 }
+
+func (s *Cube) Bounds() intersection.Bounds {
+	min := tuple.Point(-1.0, -1.0, -1.0)
+	max := tuple.Point(+1.0, +1.0, +1.0)
+	return intersection.Bounds{min, max}
+}

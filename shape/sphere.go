@@ -85,3 +85,10 @@ func (s *Sphere) GetParent() intersection.Intersectable {
 func (s *Sphere) SetParent(p intersection.Intersectable) {
 	s.Parent = p
 }
+
+func (s *Sphere) Bounds() intersection.Bounds {
+	min := tuple.Point(-1.0, -1.0, -1.0)
+	max := tuple.Point(+1.0, +1.0, +1.0)
+
+	return intersection.Bounds{min, max}
+}

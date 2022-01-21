@@ -90,5 +90,7 @@ func (s *Sphere) Bounds() intersection.Bounds {
 	min := tuple.Point(-1.0, -1.0, -1.0)
 	max := tuple.Point(+1.0, +1.0, +1.0)
 
+	// TODO
+
 	return intersection.Bounds{min, max}
 }

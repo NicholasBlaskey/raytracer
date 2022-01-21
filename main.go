@@ -481,7 +481,7 @@ func main() {
 // Draw teapot.
 func main() {
 	//n := 600
-	n := 50
+	n := 300
 	checker := material.CheckerPattern(
 		tuple.Color(1.0, 1.0, 1.0),
 		tuple.Color(0.0, 0.0, 0.0),

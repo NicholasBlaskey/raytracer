@@ -11,18 +11,19 @@ import (
 )
 
 type SmoothTriangle struct {
-	Transform matrix.Mat4
-	Material  *material.Material
-	Parent    intersection.Intersectable
-	P0        tuple.Tuple
-	P1        tuple.Tuple
-	P2        tuple.Tuple
-	N0        tuple.Tuple
-	N1        tuple.Tuple
-	N2        tuple.Tuple
-	E0        tuple.Tuple
-	E1        tuple.Tuple
-	Normal    tuple.Tuple
+	Transform   matrix.Mat4
+	Material    *material.Material
+	Parent      intersection.Intersectable
+	P0          tuple.Tuple
+	P1          tuple.Tuple
+	P2          tuple.Tuple
+	N0          tuple.Tuple
+	N1          tuple.Tuple
+	N2          tuple.Tuple
+	E0          tuple.Tuple
+	E1          tuple.Tuple
+	Normal      tuple.Tuple
+	boundingBox intersection.Bounds
 }
 
 func NewSmoothTriangle(p0, p1, p2, n0, n1, n2 tuple.Tuple) *SmoothTriangle {
@@ -30,15 +31,27 @@ func NewSmoothTriangle(p0, p1, p2, n0, n1, n2 tuple.Tuple) *SmoothTriangle {
 	e1 := p2.Sub(p0)
 	normal := e1.Cross(e0).Normalize()
 
+	min := tuple.Point(
+		math.Min(p0[0], math.Min(p1[0], p2[0])),
+		math.Min(p0[1], math.Min(p1[1], p2[1])),
+		math.Min(p0[2], math.Min(p1[2], p2[2])),
+	)
+	max := tuple.Point(
+		math.Max(p0[0], math.Max(p1[0], p2[0])),
+		math.Max(p0[1], math.Max(p1[1], p2[1])),
+		math.Max(p0[2], math.Max(p1[2], p2[2])),
+	)
+
 	return &SmoothTriangle{
 		Transform: matrix.Ident4(),
 		Material:  material.New(),
 
 		P0: p0, P1: p1, P2: p2,
 		N0: n0, N1: n1, N2: n2,
-		E0:     e0,
-		E1:     e1,
-		Normal: normal,
+		E0:          e0,
+		E1:          e1,
+		Normal:      normal,
+		boundingBox: intersection.Bounds{min, max},
 	}
 }
 
@@ -109,16 +122,5 @@ func (s *SmoothTriangle) SetParent(p intersection.Intersectable) {
 }
 
 func (s *SmoothTriangle) Bounds() intersection.Bounds {
-	min := tuple.Point(
-		math.Min(s.P0[0], math.Min(s.P1[0], s.P2[0])),
-		math.Min(s.P0[1], math.Min(s.P1[1], s.P2[1])),
-		math.Min(s.P0[2], math.Min(s.P1[2], s.P2[2])),
-	)
-	max := tuple.Point(
-		math.Max(s.P0[0], math.Max(s.P1[0], s.P2[0])),
-		math.Max(s.P0[1], math.Max(s.P1[1], s.P2[1])),
-		math.Max(s.P0[2], math.Max(s.P1[2], s.P2[2])),
-	)
-
-	return intersection.Bounds{min, max}
+	return s.boundingBox
 }

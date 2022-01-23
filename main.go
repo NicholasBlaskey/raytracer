@@ -481,7 +481,7 @@ func main() {
 // Draw teapot.
 func main() {
 	//n := 600
-	n := 300
+	n := 100
 	checker := material.CheckerPattern(
 		tuple.Color(1.0, 1.0, 1.0),
 		tuple.Color(0.0, 0.0, 0.0),
@@ -533,6 +533,7 @@ func main() {
 		panic(err)
 	}
 	fmt.Println("END LOAD TEAPOT")
+
 	//teapot.Material.Transparency = 1.0
 	//teapot.Material.RefractiveIndex = 1.52
 	//teapot.Material.Reflective = 1.0

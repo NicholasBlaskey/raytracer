@@ -1,6 +1,7 @@
 package shape
 
 import (
+	"fmt"
 	"math"
 	"sort"
 
@@ -23,6 +24,9 @@ func (s *Group) AddChild(c intersection.Intersectable) {
 	c.SetParent(s)
 	s.Children = append(s.Children, c)
 	s.calculateBoundingBox()
+
+	// NEED to report to parent !!! ABOUT THIS>!?!?!?
+	//panic("handle reporitng to parent")
 }
 
 func NewGroup() *Group {
@@ -112,37 +116,39 @@ func (s *Group) GetParent() intersection.Intersectable {
 
 func (s *Group) SetParent(p intersection.Intersectable) {
 	s.Parent = p
+	fmt.Println(p)
 }
 
 func (s *Group) calculateBoundingBox() {
 	// Know the only way we call this is in add child,
 	// so s.Children will always have len > 1.
 	b := s.Children[0].Bounds()
-	min, max := b.Min, b.Max
+	s.boundingBox = b
 	for _, c := range s.Children[1:] {
 		bounds := c.Bounds()
-		min, max := bounds.Min, bounds.Max
+		minMax := []tuple.Tuple{bounds.Min, bounds.Max}
 
 		// Get all 8 points of the children's bounding box.
+		for i := 0; i < 2; i++ {
+			for j := 0; j < 2; j++ {
+				for k := 0; k < 2; k++ {
+					p := tuple.Point(minMax[i][0], minMax[j][1], minMax[k][2])
+					groupP := s.GetTransform().Mul4x1(p)
 
-		p := min
-		p := max
-
-		/*
-			for x := -1; x <= +1; x++ {
-				for y := -1; y <= +1; y++ {
-					if x == 0 && y == 0 {
-						continue
-					}
-
-
+					s.boundingBox.Min = s.boundingBox.Min.Min(groupP)
+					s.boundingBox.Max = s.boundingBox.Max.Max(groupP)
 				}
 			}
-		*/
-
+		}
 	}
+
+	fmt.Println(s.boundingBox)
 }
 
 func (s *Group) Bounds() intersection.Bounds {
+	if len(s.Children) > 0 {
+		s.calculateBoundingBox()
+	}
+
 	return s.boundingBox
 }

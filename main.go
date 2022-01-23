@@ -481,7 +481,7 @@ func main() {
 // Draw teapot.
 func main() {
 	//n := 600
-	n := 100
+	n := 600
 	checker := material.CheckerPattern(
 		tuple.Color(1.0, 1.0, 1.0),
 		tuple.Color(0.0, 0.0, 0.0),
@@ -526,13 +526,15 @@ func main() {
 
 	fmt.Println("LOAD TEAPOT")
 	teapot, err := obj.FileToGroup("models/lowResTeapot.obj")
+	//teapot, err := obj.FileToGroup("models/highResTeapot.obj")
 	teapot.SetTransform(matrix.Translate(0.0, 0.45, 0.0).Mul4(
 		matrix.RotateX(-math.Pi / 2)).Mul4(
 		matrix.Scale(0.10, 0.10, 0.10)))
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("END LOAD TEAPOT")
+	fmt.Println("END LOAD TEAPOT", teapot.Bounds())
+	//shape.DrawBoundingBoxes = true
 
 	//teapot.Material.Transparency = 1.0
 	//teapot.Material.RefractiveIndex = 1.52

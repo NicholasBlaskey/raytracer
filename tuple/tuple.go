@@ -33,6 +33,10 @@ func (t Tuple) Sub(x Tuple) Tuple {
 	return Tuple{t[0] - x[0], t[1] - x[1], t[2] - x[2], t[3] - x[3]}
 }
 
+func (t Tuple) SubScalar(x float64) Tuple {
+	return Tuple{t[0] - x, t[1] - x, t[2] - x, 1.0}
+}
+
 func (t Tuple) Negate() Tuple {
 	return Tuple{-t[0], -t[1], -t[2], -t[3]}
 }
@@ -47,6 +51,10 @@ func (t Tuple) ColorMul(x Tuple) Tuple {
 
 func (t Tuple) Div(x float64) Tuple {
 	return Tuple{t[0] / x, t[1] / x, t[2] / x, t[3] / x}
+}
+
+func (a Tuple) TupleDiv(b Tuple) Tuple {
+	return Tuple{a[0] / b[0], a[1] / b[1], a[2] / b[2], 1.0}
 }
 
 func (t Tuple) Magnitude() float64 {

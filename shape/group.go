@@ -1,7 +1,6 @@
 package shape
 
 import (
-	"fmt"
 	"math"
 	"sort"
 
@@ -11,6 +10,8 @@ import (
 	"github.com/nicholasblaskey/raytracer/ray"
 	"github.com/nicholasblaskey/raytracer/tuple"
 )
+
+var DrawBoundingBoxes = false
 
 type Group struct {
 	Transform   matrix.Mat4
@@ -24,9 +25,6 @@ func (s *Group) AddChild(c intersection.Intersectable) {
 	c.SetParent(s)
 	s.Children = append(s.Children, c)
 	s.calculateBoundingBox()
-
-	// NEED to report to parent !!! ABOUT THIS>!?!?!?
-	//panic("handle reporitng to parent")
 }
 
 func NewGroup() *Group {
@@ -46,7 +44,7 @@ func (s *Group) checkAxis(min, max, origin, direction float64) (float64, float64
 	return tMin, tMax
 }
 
-func (s *Group) missesBoundingBox(r ray.Ray) bool {
+func (s *Group) missesBoundingBox(r ray.Ray) (float64, float64, bool) {
 	b := s.Bounds()
 	xTMin, xTMax := s.checkAxis(b.Min[0], b.Max[0], r.Origin[0], r.Direction[0])
 	yTMin, yTMax := s.checkAxis(b.Min[1], b.Max[1], r.Origin[1], r.Direction[1])
@@ -55,12 +53,20 @@ func (s *Group) missesBoundingBox(r ray.Ray) bool {
 	tMin := math.Max(xTMin, math.Max(yTMin, zTMin))
 	tMax := math.Min(xTMax, math.Min(yTMax, zTMax))
 
-	return tMin > tMax
+	return tMin, tMax, tMin > tMax
 }
 
 func (s *Group) localIntersections(r ray.Ray) []*intersection.Intersection {
-	if s.missesBoundingBox(r) {
+	if tMin, tMax, misses := s.missesBoundingBox(r); misses {
 		return nil
+	} else {
+		if DrawBoundingBoxes {
+			s.Material.Color = tuple.Tuple{0.3, 0.5, 0.3}
+			return []*intersection.Intersection{
+				&intersection.Intersection{Obj: s, T: tMin},
+				&intersection.Intersection{Obj: s, T: tMax},
+			}
+		}
 	}
 
 	var xs []*intersection.Intersection
@@ -80,7 +86,14 @@ func (s *Group) Intersections(origR ray.Ray) []*intersection.Intersection {
 }
 
 func (s *Group) localNormalAt(p tuple.Tuple) tuple.Tuple {
-	xAbs, yAbs, zAbs := math.Abs(p[0]), math.Abs(p[1]), math.Abs(p[2])
+	// Only called in case of bounding box.
+	// Convert from p being in [min, max] to being in [0, 1]
+	// Solve for a in p = min*a+max*(1-a) where a \in [0, 1]
+	a := p.Sub(s.boundingBox.Min).TupleDiv(s.boundingBox.Max.Sub(s.boundingBox.Min))
+	// Convert from [0, 1] to [-1, 1]
+	a = a.SubScalar(1.0 / 2.0).Mul(2.0)
+
+	xAbs, yAbs, zAbs := math.Abs(a[0]), math.Abs(a[1]), math.Abs(a[2])
 
 	if xAbs >= yAbs && xAbs >= zAbs {
 		return tuple.Vector(p[0], 0.0, 0.0)
@@ -116,7 +129,6 @@ func (s *Group) GetParent() intersection.Intersectable {
 
 func (s *Group) SetParent(p intersection.Intersectable) {
 	s.Parent = p
-	fmt.Println(p)
 }
 
 func (s *Group) calculateBoundingBox() {
@@ -133,7 +145,7 @@ func (s *Group) calculateBoundingBox() {
 			for j := 0; j < 2; j++ {
 				for k := 0; k < 2; k++ {
 					p := tuple.Point(minMax[i][0], minMax[j][1], minMax[k][2])
-					groupP := s.GetTransform().Mul4x1(p)
+					groupP := c.GetTransform().Mul4x1(p)
 
 					s.boundingBox.Min = s.boundingBox.Min.Min(groupP)
 					s.boundingBox.Max = s.boundingBox.Max.Max(groupP)
@@ -142,13 +154,15 @@ func (s *Group) calculateBoundingBox() {
 		}
 	}
 
-	fmt.Println(s.boundingBox)
+	if s.Parent != nil {
+		parent, ok := s.Parent.(*Group)
+		if !ok {
+			panic("Somehow object ended up with non group parent. Something serious went wrong")
+		}
+		parent.calculateBoundingBox()
+	}
 }
 
 func (s *Group) Bounds() intersection.Bounds {
-	if len(s.Children) > 0 {
-		s.calculateBoundingBox()
-	}
-
 	return s.boundingBox
 }

@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"math"
 
+	"math/rand"
+
 	"github.com/nicholasblaskey/raytracer/camera"
 	"github.com/nicholasblaskey/raytracer/light"
-	"github.com/nicholasblaskey/raytracer/material"
+	//"github.com/nicholasblaskey/raytracer/material"
 	"github.com/nicholasblaskey/raytracer/matrix"
-	"github.com/nicholasblaskey/raytracer/obj"
+	//"github.com/nicholasblaskey/raytracer/obj"
 	"github.com/nicholasblaskey/raytracer/shape"
 	"github.com/nicholasblaskey/raytracer/tuple"
 	"github.com/nicholasblaskey/raytracer/world"
@@ -478,6 +480,7 @@ func main() {
 }
 */
 
+/*
 // Draw teapot.
 func main() {
 	//n := 600
@@ -507,23 +510,6 @@ func main() {
 		matrix.RotateX(math.Pi / 2))
 	backWall.Material.Pattern = stripes
 
-	/*
-		glass := shape.NewGlassSphere()
-		glass.Transform = matrix.Translate(-0.5, 1.0, -1.0).Mul4(
-			matrix.Scale(1.0, 1.0, 1.0))
-		//glass.Material.Color = tuple.Color(1.0, 1.0, 1.0) //tuple.Color(0.1, 1.0, 0.5)
-		glass.Material.Diffuse = 0.5
-		//glass.Material.Specular = 0.3
-		//glass.Material.Reflective = 0.5
-
-		air := shape.NewGlassSphere()a
-		air.Transform = matrix.Translate(-0.5, 1.0, -1.0).Mul4(
-			matrix.Scale(0.3, 0.3, 0.3))
-		air.Material.Color = tuple.Color(1.0, 1.0, 1.0)
-		air.Material.RefractiveIndex = 1.02
-		air.Material.Transparency = 0.8
-	*/
-
 	fmt.Println("LOAD TEAPOT")
 	teapot, err := obj.FileToGroup("models/lowResTeapot.obj")
 	//teapot, err := obj.FileToGroup("models/highResTeapot.obj")
@@ -552,6 +538,82 @@ func main() {
 		tuple.Point(0.0, 1.0, 0.0),
 		tuple.Vector(0.0, 1.0, 0.0))
 
+	canv := c.Render(w)
+	if err := canv.Save("test.ppm"); err != nil {
+		panic(err)
+	}
+}
+*/
+
+func generateSphere(xMin, xMax, zMin, zMax, sizeMin, sizeMax float64) *shape.Sphere {
+	x := xMin + (xMax-xMin)*rand.Float64()
+	z := zMin + (zMax-zMin)*rand.Float64()
+	size := sizeMin + (sizeMax-sizeMin)*(rand.ExpFloat64()/2.0)
+
+	s := shape.NewSphere()
+	s.Transform = matrix.Translate(x, size, z).Mul4(
+		matrix.Scale(size, size, size))
+
+	if rand.Int31n(2) == 0 {
+		// Metalic
+		fmt.Println("A")
+		s.Material.Reflective = 0.8
+		//s.Material.Shininess = 800
+		//s.Material.Specular = 0.6
+		//s.Material.Color = tuple.Color(0.6, 0.6, 0.6)
+	} else {
+		// Glass
+		fmt.Println("B")
+		//s.Material.Reflective = 0.5
+		s.Material.Transparency = 0.8
+		s.Material.RefractiveIndex = 1.52
+	}
+
+	return s
+}
+
+// Draws a ton of spheres.
+func main() {
+	n := 300
+
+	floor := shape.NewPlane()
+	floor.Material.Color = tuple.Color(1.0, 0.9, 0.9)
+	floor.Material.Specular = 0.0
+
+	fmt.Println("FMT")
+
+	w := world.New()
+	l := light.NewPointLight(tuple.Point(-10.0, 30.0, -10.0),
+		tuple.Color(1.0, 1.0, 1.0))
+	w.Light = &l
+	w.Objects = append(w.Objects, floor)
+
+	// x from [-32, 32]
+	// z from [-20, 64]
+	// size from [0, 1]
+	const (
+		xMin    = -32
+		xMax    = 32
+		zMin    = -20
+		zMax    = 64
+		sizeMin = 0.01
+		sizeMax = 3.0
+	)
+
+	var spheres []*shape.Sphere
+	for i := 0; i < 10; i++ {
+		spheres = append(spheres, generateSphere(xMin, xMax, zMin, zMax, sizeMin, sizeMax))
+	}
+
+	for _, s := range spheres {
+		w.Objects = append(w.Objects, s)
+	}
+
+	c := camera.New(n*2, n, math.Pi/3.0)
+	c.Transform = matrix.View(
+		tuple.Point(0.0, 25.0, -40.0),
+		tuple.Point(0.0, 1.0, 0.0),
+		tuple.Vector(0.0, 1.0, 0.0))
 	canv := c.Render(w)
 	if err := canv.Save("test.ppm"); err != nil {
 		panic(err)

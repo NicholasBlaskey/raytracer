@@ -8,7 +8,7 @@ import (
 
 	"github.com/nicholasblaskey/raytracer/camera"
 	"github.com/nicholasblaskey/raytracer/light"
-	//"github.com/nicholasblaskey/raytracer/material"
+	"github.com/nicholasblaskey/raytracer/material"
 	"github.com/nicholasblaskey/raytracer/matrix"
 	//"github.com/nicholasblaskey/raytracer/obj"
 	"github.com/nicholasblaskey/raytracer/shape"
@@ -355,6 +355,7 @@ func main() {
 /*
 // Draw scene with reflection (cool)
 func main() {
+	fmt.Println("start")
 	//n := 600
 	n := 300
 	checker := material.CheckerPattern(
@@ -550,25 +551,34 @@ func generateSphere(xMin, xMax, zMin, zMax, sizeMin, sizeMax float64) *shape.Sph
 	z := zMin + (zMax-zMin)*rand.Float64()
 	size := sizeMin + (sizeMax-sizeMin)*(rand.ExpFloat64()/2.0)
 
-	s := shape.NewSphere()
+	/*
+		x = 0.0
+		z = 0.0
+		size = 10.0
+	*/
+
+	s := shape.NewGlassSphere()
 	s.Transform = matrix.Translate(x, size, z).Mul4(
 		matrix.Scale(size, size, size))
+	//s.Material.Reflective = 0.0
+	//s.Material.RefractiveIndex = 0.0
 
-	if rand.Int31n(2) == 0 {
-		// Metalic
-		fmt.Println("A")
-		s.Material.Reflective = 0.8
-		//s.Material.Shininess = 800
-		//s.Material.Specular = 0.6
-		//s.Material.Color = tuple.Color(0.6, 0.6, 0.6)
-	} else {
-		// Glass
-		fmt.Println("B")
-		//s.Material.Reflective = 0.5
-		s.Material.Transparency = 0.8
-		s.Material.RefractiveIndex = 1.52
-	}
-
+	/*
+		if rand.Int31n(2) == 0 && false {
+			// Metalic
+			fmt.Println("A")
+			//s.Material.Reflective = 0.8
+			//s.Material.Shininess = 800
+			//s.Material.Specular = 0.6
+			//s.Material.Color = tuple.Color(0.6, 0.6, 0.6)
+		} else {
+			// Glass
+			fmt.Println("B")
+			//s.Material.Reflective = 0.5
+			s.Material.Transparency = 0.8
+			s.Material.RefractiveIndex = 1.52
+		}
+	*/
 	return s
 }
 
@@ -579,40 +589,70 @@ func main() {
 	floor := shape.NewPlane()
 	floor.Material.Color = tuple.Color(1.0, 0.9, 0.9)
 	floor.Material.Specular = 0.0
+	floor.Material.Pattern = material.CheckerPattern(
+		tuple.Color(1.0, 1.0, 1.0),
+		tuple.Color(0.0, 0.0, 0.0),
+	)
+	floor.Material.Pattern.SetTransform(matrix.Scale(10.0, 10.0, 10.0))
+
+	ceil := shape.NewPlane()
+	ceil.Transform = matrix.Translate(0.0, 50.0, 0.0)
+	ceil.Material.Color = tuple.Color(0.3, 0.3, 0.7)
+	ceil.Material.Specular = 0.0
 
 	fmt.Println("FMT")
 
 	w := world.New()
-	l := light.NewPointLight(tuple.Point(-10.0, 30.0, -10.0),
+	l := light.NewPointLight(tuple.Point(25.0, 25.0, 0.0), //tuple.Point(-10.0, 30.0, -10.0),
 		tuple.Color(1.0, 1.0, 1.0))
 	w.Light = &l
-	w.Objects = append(w.Objects, floor)
+	w.Objects = append(w.Objects, floor, ceil)
 
 	// x from [-32, 32]
 	// z from [-20, 64]
 	// size from [0, 1]
 	const (
-		xMin    = -32
-		xMax    = 32
-		zMin    = -20
-		zMax    = 64
-		sizeMin = 0.01
+		xMin    = -128
+		xMax    = 128
+		zMin    = -32
+		zMax    = 256
+		sizeMin = 0.30
 		sizeMax = 3.0
 	)
 
 	var spheres []*shape.Sphere
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 30; i++ {
 		spheres = append(spheres, generateSphere(xMin, xMax, zMin, zMax, sizeMin, sizeMax))
 	}
 
+	// Make bounding box.
+	leftBound, rightBound := shape.NewGroup(), shape.NewGroup()
+	leftBound.Material.Color = tuple.Color(0.3, 0.5, 0.3)
+	leftBound.Material.Color = tuple.Color(0.3, 0.3, 0.5)
 	for _, s := range spheres {
-		w.Objects = append(w.Objects, s)
+		p := tuple.Point(0.0, 0.0, 0.0) // Sphere center
+		p = s.Transform.Mul4x1(p)
+
+		if p[0] > 0 {
+			leftBound.AddChild(s)
+		} else {
+			rightBound.AddChild(s)
+		}
 	}
+
+	shape.DrawBoundingBoxes = true
+
+	w.Objects = append(w.Objects, rightBound, leftBound)
+	/*
+		for _, s := range spheres {
+			w.Objects = append(w.Objects, s)
+		}
+	*/
 
 	c := camera.New(n*2, n, math.Pi/3.0)
 	c.Transform = matrix.View(
 		tuple.Point(0.0, 25.0, -40.0),
-		tuple.Point(0.0, 1.0, 0.0),
+		tuple.Point(0.0, 10.0, 0.0),
 		tuple.Vector(0.0, 1.0, 0.0))
 	canv := c.Render(w)
 	if err := canv.Save("test.ppm"); err != nil {

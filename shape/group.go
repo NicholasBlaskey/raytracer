@@ -61,7 +61,6 @@ func (s *Group) localIntersections(r ray.Ray) []*intersection.Intersection {
 		return nil
 	} else {
 		if DrawBoundingBoxes {
-			s.Material.Color = tuple.Tuple{0.3, 0.5, 0.3}
 			return []*intersection.Intersection{
 				&intersection.Intersection{Obj: s, T: tMin},
 				&intersection.Intersection{Obj: s, T: tMax},

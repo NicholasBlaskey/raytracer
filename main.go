@@ -10,6 +10,7 @@ import (
 	"github.com/nicholasblaskey/raytracer/light"
 	"github.com/nicholasblaskey/raytracer/material"
 	"github.com/nicholasblaskey/raytracer/matrix"
+	"time"
 	//"github.com/nicholasblaskey/raytracer/obj"
 	"github.com/nicholasblaskey/raytracer/shape"
 	"github.com/nicholasblaskey/raytracer/tuple"
@@ -546,10 +547,10 @@ func main() {
 }
 */
 
-func generateSphere(xMin, xMax, zMin, zMax, sizeMin, sizeMax float64) *shape.Sphere {
-	x := xMin + (xMax-xMin)*rand.Float64()
-	z := zMin + (zMax-zMin)*rand.Float64()
-	size := sizeMin + (sizeMax-sizeMin)*(rand.ExpFloat64()/2.0)
+func generateSphere(xRange, zRange, sizeRange interval) *shape.Sphere {
+	x := xRange.min + (xRange.max-xRange.min)*rand.Float64()
+	z := zRange.min + (zRange.max-zRange.min)*rand.Float64()
+	size := sizeRange.min + (sizeRange.max-sizeRange.min)*(rand.ExpFloat64()/2.0)
 
 	/*
 		x = 0.0
@@ -582,8 +583,80 @@ func generateSphere(xMin, xMax, zMin, zMax, sizeMin, sizeMax float64) *shape.Sph
 	return s
 }
 
+type node struct {
+	topLeft  *node
+	topRight *node
+	botLeft  *node
+	botRight *node
+	group    *shape.Group
+}
+
+func makeNodes(depth int) *node {
+	if depth == 0 {
+		return nil
+	}
+
+	n := &node{group: shape.NewGroup()}
+	n.topLeft = makeNodes(depth - 1)
+	n.topRight = makeNodes(depth - 1)
+	n.botLeft = makeNodes(depth - 1)
+	n.botRight = makeNodes(depth - 1)
+
+	if n.topLeft != nil {
+		n.group.AddChild(n.topLeft.group)
+		n.group.AddChild(n.topRight.group)
+		n.group.AddChild(n.botLeft.group)
+		n.group.AddChild(n.botRight.group)
+	}
+
+	return n
+}
+
+func addToGroups(root *node, s *shape.Sphere, p tuple.Tuple, xRange, zRange interval) {
+	if root.topLeft == nil {
+		root.group.AddChild(s)
+		return
+	}
+
+	xLow, xHigh := xRange.halfInterval()
+	zLow, zHigh := zRange.halfInterval()
+
+	if xLow.contains(p[0]) {
+		if zLow.contains(p[2]) {
+			addToGroups(root.topLeft, s, p, xLow, zLow)
+		} else {
+			addToGroups(root.topRight, s, p, xLow, zHigh)
+		}
+	} else {
+		if zLow.contains(p[2]) {
+			addToGroups(root.botLeft, s, p, xHigh, zLow)
+		} else {
+			addToGroups(root.botRight, s, p, xHigh, zHigh)
+		}
+	}
+}
+
+type interval struct {
+	min float64
+	max float64
+}
+
+func (i *interval) contains(x float64) bool {
+	return x >= i.min && x <= i.max
+}
+
+func (i *interval) halfInterval() (interval, interval) {
+	mid := (i.min + i.max) / 2.0
+
+	l := interval{i.min, mid}
+	h := interval{mid, i.max}
+	return l, h
+}
+
 // Draws a ton of spheres.
 func main() {
+	start := time.Now()
+
 	n := 300
 
 	floor := shape.NewPlane()
@@ -608,41 +681,26 @@ func main() {
 	w.Light = &l
 	w.Objects = append(w.Objects, floor, ceil)
 
-	// x from [-32, 32]
-	// z from [-20, 64]
-	// size from [0, 1]
-	const (
-		xMin    = -128
-		xMax    = 128
-		zMin    = -32
-		zMax    = 256
-		sizeMin = 0.30
-		sizeMax = 3.0
-	)
+	// Generate spheres
+	xRange := interval{-128, 128}
+	zRange := interval{-32, 256}
+	sizeRange := interval{0.30, 3.0}
 
 	var spheres []*shape.Sphere
-	for i := 0; i < 30; i++ {
-		spheres = append(spheres, generateSphere(xMin, xMax, zMin, zMax, sizeMin, sizeMax))
+	for i := 0; i < 400; i++ {
+		spheres = append(spheres, generateSphere(xRange, zRange, sizeRange))
 	}
 
-	// Make bounding box.
-	leftBound, rightBound := shape.NewGroup(), shape.NewGroup()
-	leftBound.Material.Color = tuple.Color(0.3, 0.5, 0.3)
-	leftBound.Material.Color = tuple.Color(0.3, 0.3, 0.5)
+	// Make the bounding box.
+	root := makeNodes(3)
 	for _, s := range spheres {
 		p := tuple.Point(0.0, 0.0, 0.0) // Sphere center
 		p = s.Transform.Mul4x1(p)
-
-		if p[0] > 0 {
-			leftBound.AddChild(s)
-		} else {
-			rightBound.AddChild(s)
-		}
+		addToGroups(root, s, p, xRange, zRange)
 	}
 
-	shape.DrawBoundingBoxes = true
-
-	w.Objects = append(w.Objects, rightBound, leftBound)
+	shape.DrawBoundingBoxes = false
+	w.Objects = append(w.Objects, root.group)
 	/*
 		for _, s := range spheres {
 			w.Objects = append(w.Objects, s)
@@ -658,4 +716,6 @@ func main() {
 	if err := canv.Save("test.ppm"); err != nil {
 		panic(err)
 	}
+
+	fmt.Println("took approximately", time.Now().Sub(start))
 }

@@ -18,6 +18,16 @@ const (
 	Difference
 )
 
+func IntersectionAllowed(opt Operation, lHit, inL, inR bool) bool {
+	if opt == Union {
+		return (lHit && !inR) || (!lHit && !inL)
+	} else if opt == Intersection {
+		return (lHit && inR) || (!lHit && inL)
+	} else { // Difference
+		return (lHit && !inR) || (!lHit && inL)
+	}
+}
+
 type CSG struct {
 	Transform matrix.Mat4
 	Material  *material.Material

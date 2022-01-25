@@ -115,6 +115,9 @@ func matrixEquals(m0, m1 string) error {
 	if _, ok := intersectionObjects[m1]; ok { // Case of intersection comparision.
 		return intersectionEquals(m0, m1)
 	}
+	if _, ok := booleans[m0]; ok {
+		return booleansEqual(m0, m1 == "true")
+	}
 
 	areEqual := false
 	switch mat0 := matrices[m0].(type) {

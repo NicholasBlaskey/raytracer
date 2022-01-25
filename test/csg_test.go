@@ -9,7 +9,10 @@ import (
 	"github.com/cucumber/godog"
 )
 
+var booleans map[string]bool
+
 func csgBefore(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
+	booleans = make(map[string]bool)
 	return ctx, nil
 }
 
@@ -21,6 +24,9 @@ func csgSteps(ctx *godog.ScenarioContext) {
 		wordRegex), csgOperationEqualTo)
 	ctx.Step(fmt.Sprintf(`^%s\.(left|right) = %s$`, wordRegex, wordRegex),
 		csgChildEqualTo)
+
+	ctx.Step(fmt.Sprintf(`^%s ← intersection_allowed\("%s", %s, %s, %s\)$`,
+		wordRegex, wordRegex, wordRegex, wordRegex, wordRegex), intersectionAllowed)
 }
 
 func createCSG(res, operation, left, right string) {
@@ -61,4 +67,31 @@ func csgChildEqualTo(c, leftOrRight, expected string) error {
 			shapes[expected], actual)
 	}
 	return nil
+}
+
+func intersectionAllowed(res, operation, lHitS, inLS, inRS string) {
+	opt := shape.Union
+	if operation == "intersection" {
+		opt = shape.Intersection
+	} else if operation == "difference" {
+		opt = shape.Difference
+	}
+
+	lHit := lHitS == "true"
+	inL := inLS == "true"
+	inR := inRS == "true"
+
+	booleans[res] = shape.IntersectionAllowed(opt, lHit, inL, inR)
+}
+
+func booleansEqual(actual string, expected bool) error {
+	if b, ok := booleans[actual]; ok {
+		if b != expected {
+			return fmt.Errorf("%s expected %t got %t", actual, expected, b)
+		}
+		return nil
+	} else {
+		return fmt.Errorf("%s not set", actual)
+	}
+
 }

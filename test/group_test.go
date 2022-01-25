@@ -58,7 +58,7 @@ func groupIncludesChild(g, s string) error {
 }
 
 func shapeParentEqualTo(s, g string) error {
-	if shapes[s].GetParent() != shapes[g].(*shape.Group) {
+	if shapes[s].GetParent() != shapes[g] {
 		return fmt.Errorf("%s.parent expected %+v got %+v", s,
 			shapes[s].GetParent(), shapes[g])
 	}

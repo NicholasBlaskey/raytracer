@@ -657,7 +657,7 @@ func (i *interval) halfInterval() (interval, interval) {
 func main() {
 	start := time.Now()
 
-	n := 300
+	n := 900
 
 	floor := shape.NewPlane()
 	floor.Material.Color = tuple.Color(1.0, 0.9, 0.9)

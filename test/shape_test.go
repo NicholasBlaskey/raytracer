@@ -108,6 +108,12 @@ func (s *testShape) Intersections(origR ray.Ray) []*intersection.Intersection {
 	})
 }
 
+func (s *testShape) Bounds() intersection.Bounds {
+	min := tuple.Point(-1.0, -1.0, -1.0)
+	max := tuple.Point(+1.0, +1.0, +1.0)
+	return intersection.Bounds{min, max}
+}
+
 func worldToObject(p, s string, x, y, z float64) {
 	tuples[p] = intersection.WorldToObject(shapes[s], tuple.Point(x, y, z))
 }

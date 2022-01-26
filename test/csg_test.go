@@ -27,6 +27,11 @@ func csgSteps(ctx *godog.ScenarioContext) {
 
 	ctx.Step(fmt.Sprintf(`^%s ← intersection_allowed\("%s", %s, %s, %s\)$`,
 		wordRegex, wordRegex, wordRegex, wordRegex, wordRegex), intersectionAllowed)
+	ctx.Step(fmt.Sprintf(`^%s ← filter_intersections\(%s, %s\)$`,
+		wordRegex, wordRegex, wordRegex), filterIntersections)
+
+	ctx.Step(fmt.Sprintf(`^%s\[%s\] = %s\[%s\]$`,
+		wordRegex, intRegex, wordRegex, intRegex), intersectionCompareArrayElement)
 }
 
 func createCSG(res, operation, left, right string) {
@@ -93,5 +98,19 @@ func booleansEqual(actual string, expected bool) error {
 	} else {
 		return fmt.Errorf("%s not set", actual)
 	}
+}
 
+func filterIntersections(res, csg, xs string) {
+	intersections[res] = shapes[csg].(*shape.CSG).FilterIntersections(intersections[xs])
+}
+
+func intersectionCompareArrayElement(xs0 string, i0 int, xs1 string, i1 int) error {
+	actual := intersections[xs0][i0]
+	expected := intersections[xs1][i1]
+
+	if actual != expected {
+		return fmt.Errorf("%s[%d] expected %+v got %+v", xs0, i0, expected, actual)
+	}
+
+	return nil
 }

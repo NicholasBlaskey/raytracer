@@ -91,6 +91,43 @@ func (s *CSG) checkAxis(origin, direction float64) (float64, float64) {
 	return tMin, tMax
 }
 
+func hitsObject(haystack, needle intersection.Intersectable) bool {
+	switch obj := haystack.(type) {
+	case *Group:
+		for _, c := range obj.Children {
+			if c == needle {
+				return true
+			}
+		}
+		return false
+	case *CSG:
+		return obj.Left == needle || obj.Right == needle
+	default:
+		return haystack == needle
+	}
+}
+
+func (s *CSG) FilterIntersections(xs []*intersection.Intersection) []*intersection.Intersection {
+	inL, inR := false, false
+	var res []*intersection.Intersection
+
+	for _, inter := range xs {
+		lHit := hitsObject(s.Left, inter.Obj)
+
+		if IntersectionAllowed(s.Operation, lHit, inL, inR) {
+			res = append(res, inter)
+		}
+
+		if lHit {
+			inL = !inL
+		} else {
+			inR = !inR
+		}
+	}
+
+	return res
+}
+
 func (s *CSG) Intersections(origR ray.Ray) []*intersection.Intersection {
 	return intersection.Intersections(s, origR, s.localIntersections)
 }

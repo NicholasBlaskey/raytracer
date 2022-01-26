@@ -1,7 +1,7 @@
 package shape
 
 import (
-	"math"
+	"sort"
 
 	"github.com/nicholasblaskey/raytracer/intersection"
 	"github.com/nicholasblaskey/raytracer/material"
@@ -51,46 +51,6 @@ func NewCSG(operation Operation, l, r intersection.Intersectable) *CSG {
 	return s
 }
 
-func (s *CSG) localIntersections(r ray.Ray) []*intersection.Intersection {
-	// TODO optimize this when it is clear we don't need to check axis.
-	xTMin, xTMax := s.checkAxis(r.Origin[0], r.Direction[0])
-	yTMin, yTMax := s.checkAxis(r.Origin[1], r.Direction[1])
-	zTMin, zTMax := s.checkAxis(r.Origin[2], r.Direction[2])
-
-	tMin := math.Max(xTMin, math.Max(yTMin, zTMin))
-	tMax := math.Min(xTMax, math.Min(yTMax, zTMax))
-	if tMin > tMax {
-		return nil
-	}
-
-	return []*intersection.Intersection{
-		&intersection.Intersection{Obj: s, T: tMin},
-		&intersection.Intersection{Obj: s, T: tMax},
-	}
-}
-
-func (s *CSG) checkAxis(origin, direction float64) (float64, float64) {
-	tMinNumerator := (-1 - origin)
-	tMaxNumerator := (1 - origin)
-
-	tMin := tMinNumerator / direction
-	tMax := tMaxNumerator / direction
-
-	/* // Is this needed? Or does go handle infintly floating point division?
-	tMin := tMinNumerator * math.Inf(1)
-	tMax := tMaxNumerator * math.Inf(1)
-	if math.Abs(direction) >= intersection.EPSILON {
-		tMin = tMinNumerator / direction
-		tMax = tMaxNumerator / direction
-	}
-	*/
-
-	if tMin > tMax {
-		return tMax, tMin
-	}
-	return tMin, tMax
-}
-
 func hitsObject(haystack, needle intersection.Intersectable) bool {
 	switch obj := haystack.(type) {
 	case *Group:
@@ -128,19 +88,25 @@ func (s *CSG) FilterIntersections(xs []*intersection.Intersection) []*intersecti
 	return res
 }
 
+func (s *CSG) localIntersections(r ray.Ray) []*intersection.Intersection {
+	xsL := s.Left.Intersections(r)
+	xsR := s.Right.Intersections(r)
+	xs := append(xsL, xsR...)
+
+	sort.Slice(xs, func(i, j int) bool {
+		return xs[i].T < xs[i].T
+	})
+
+	return xs
+}
+
 func (s *CSG) Intersections(origR ray.Ray) []*intersection.Intersection {
 	return intersection.Intersections(s, origR, s.localIntersections)
 }
 
 func (s *CSG) localNormalAt(p tuple.Tuple) tuple.Tuple {
-	xAbs, yAbs, zAbs := math.Abs(p[0]), math.Abs(p[1]), math.Abs(p[2])
-
-	if xAbs >= yAbs && xAbs >= zAbs {
-		return tuple.Vector(p[0], 0.0, 0.0)
-	} else if yAbs > xAbs && yAbs > zAbs {
-		return tuple.Vector(0.0, p[1], 0.0)
-	}
-	return tuple.Vector(0.0, 0.0, p[2])
+	panic("Something went wrong! Should never call a csg normal!")
+	return tuple.Vector(0.0, 0.0, 0.0)
 }
 
 func (s *CSG) NormalAt(worldPoint tuple.Tuple, i *intersection.Intersection) tuple.Tuple {

@@ -58,3 +58,9 @@ Scenario Outline: Filtering a list of intersections
  | union        | 0  | 3  |
  | intersection | 1  | 2  |
  | difference   | 0  | 1  |
+
+Scenario: A ray misses a CSG object
+  Given c ← csg("union", sphere(), cube())
+    And r ← ray(point(0.0, 2.0, -5.0), vector(0.0, 0.0, 1.0))
+  When xs ← local_intersect(c, r)
+  Then xs is empty

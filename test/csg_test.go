@@ -19,6 +19,8 @@ func csgBefore(ctx context.Context, sc *godog.Scenario) (context.Context, error)
 func csgSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(fmt.Sprintf(`^%s ← csg\("(union|intersection|difference)", %s, %s\)$`,
 		wordRegex, wordRegex, wordRegex), createCSG)
+	ctx.Step(fmt.Sprintf(`^%s ← csg\("(union|intersection|difference)", sphere\(\), cube\(\)\)$`,
+		wordRegex), createCSGSphereCube)
 
 	ctx.Step(fmt.Sprintf(`^%s\.operation = "(union|intersection|difference)"$`,
 		wordRegex), csgOperationEqualTo)
@@ -43,6 +45,17 @@ func createCSG(res, operation, left, right string) {
 	}
 
 	shapes[res] = shape.NewCSG(opt, shapes[left], shapes[right])
+}
+
+func createCSGSphereCube(res, operation string) {
+	opt := shape.Union
+	if operation == "intersection" {
+		opt = shape.Intersection
+	} else if operation == "difference" {
+		opt = shape.Difference
+	}
+
+	shapes[res] = shape.NewCSG(opt, shape.NewSphere(), shape.NewCube())
 }
 
 func csgOperationEqualTo(c, operation string) error {

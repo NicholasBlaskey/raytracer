@@ -10,7 +10,6 @@ import (
 	"github.com/nicholasblaskey/raytracer/light"
 	"github.com/nicholasblaskey/raytracer/material"
 	"github.com/nicholasblaskey/raytracer/matrix"
-	"time"
 	//"github.com/nicholasblaskey/raytracer/obj"
 	"github.com/nicholasblaskey/raytracer/shape"
 	"github.com/nicholasblaskey/raytracer/tuple"
@@ -415,7 +414,6 @@ func main() {
 	if err := canv.Save("test.ppm"); err != nil {
 		panic(err)
 	}
-
 }
 */
 
@@ -653,6 +651,7 @@ func (i *interval) halfInterval() (interval, interval) {
 	return l, h
 }
 
+/*
 // Draws a ton of spheres.
 func main() {
 	start := time.Now()
@@ -701,11 +700,6 @@ func main() {
 
 	shape.DrawBoundingBoxes = false
 	w.Objects = append(w.Objects, root.group)
-	/*
-		for _, s := range spheres {
-			w.Objects = append(w.Objects, s)
-		}
-	*/
 
 	c := camera.New(n*2, n, math.Pi/3.0)
 	c.Transform = matrix.View(
@@ -718,4 +712,82 @@ func main() {
 	}
 
 	fmt.Println("took approximately", time.Now().Sub(start))
+}
+*/
+
+// Draw scene with reflection (cool)
+func main() {
+	fmt.Println("start")
+	//n := 600
+	n := 300
+	checker := material.CheckerPattern(
+		tuple.Color(1.0, 1.0, 1.0),
+		tuple.Color(0.0, 0.0, 0.0),
+	)
+
+	stripes := material.StripePattern(
+		tuple.Color(1.0, 1.0, 1.0),
+		tuple.Color(0.0, 0.0, 0.0),
+	)
+
+	floor := shape.NewPlane()
+	floor.Material.Color = tuple.Color(1.0, 0.9, 0.9)
+	floor.Material.Specular = 0.0
+	floor.Material.Pattern = checker
+
+	leftWall := shape.NewPlane()
+	leftWall.Transform = matrix.Translate(0.0, 0.0, 10.0).Mul4(
+		matrix.RotateX(math.Pi / 2))
+	leftWall.Material.Pattern = checker
+
+	backWall := shape.NewPlane()
+	backWall.Transform = matrix.Translate(0.0, 0.0, -12.0).Mul4(
+		matrix.RotateX(math.Pi / 2))
+	backWall.Material.Pattern = stripes
+
+	/*
+		glass := shape.NewGlassSphere()
+		glass.Transform = matrix.Translate(-0.5, 1.0, -1.0).Mul4(
+			matrix.Scale(1.0, 1.0, 1.0))
+		//glass.Material.Color = tuple.Color(1.0, 1.0, 1.0) //tuple.Color(0.1, 1.0, 0.5)
+		glass.Material.Diffuse = 0.5
+		//glass.Material.Specular = 0.3
+		//glass.Material.Reflective = 0.5
+
+		air := shape.NewGlassSphere()
+		air.Transform = matrix.Translate(-0.5, 1.0, -1.0).Mul4(
+			matrix.Scale(0.3, 0.3, 0.3))
+		air.Material.Color = tuple.Color(1.0, 1.0, 1.0)
+		air.Material.RefractiveIndex = 1.02
+		air.Material.Transparency = 0.8
+	*/
+
+	a := shape.NewCube()
+	a.Material.Color = tuple.Color(0.3, 0.5, 0.3)
+	a.Transform = matrix.Translate(0.0, 0.0, 0.0)
+
+	b := shape.NewSphere()
+	b.Material.Color = tuple.Color(0.5, 0.3, 0.3)
+	b.Transform = matrix.Translate(0.0, 0.0, 0.0)
+
+	csg := shape.NewCSG(shape.Intersect, a, b)
+
+	//csg := shape.NewCSG(shape.Difference, air, glass)
+
+	w := world.New()
+	l := light.NewPointLight(tuple.Point(-10.0, 10.0, -10.0),
+		tuple.Color(1.0, 1.0, 1.0))
+	w.Light = &l
+	w.Objects = append(w.Objects, floor, csg, leftWall, backWall)
+
+	c := camera.New(n*2, n, math.Pi/3.0)
+	c.Transform = matrix.View(
+		tuple.Point(0.0, 1.5, -5.0),
+		tuple.Point(0.0, 1.0, 0.0),
+		tuple.Vector(0.0, 1.0, 0.0))
+
+	canv := c.Render(w)
+	if err := canv.Save("test.ppm"); err != nil {
+		panic(err)
+	}
 }

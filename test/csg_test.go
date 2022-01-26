@@ -39,7 +39,7 @@ func csgSteps(ctx *godog.ScenarioContext) {
 func createCSG(res, operation, left, right string) {
 	opt := shape.Union
 	if operation == "intersection" {
-		opt = shape.Intersection
+		opt = shape.Intersect
 	} else if operation == "difference" {
 		opt = shape.Difference
 	}
@@ -50,7 +50,7 @@ func createCSG(res, operation, left, right string) {
 func createCSGSphereCube(res, operation string) {
 	opt := shape.Union
 	if operation == "intersection" {
-		opt = shape.Intersection
+		opt = shape.Intersect
 	} else if operation == "difference" {
 		opt = shape.Difference
 	}
@@ -61,7 +61,7 @@ func createCSGSphereCube(res, operation string) {
 func csgOperationEqualTo(c, operation string) error {
 	csg := shapes[c].(*shape.CSG)
 	expected := "union"
-	if csg.Operation == shape.Intersection {
+	if csg.Operation == shape.Intersect {
 		expected = "intersection"
 	} else if csg.Operation == shape.Difference {
 		expected = "difference"
@@ -90,7 +90,7 @@ func csgChildEqualTo(c, leftOrRight, expected string) error {
 func intersectionAllowed(res, operation, lHitS, inLS, inRS string) {
 	opt := shape.Union
 	if operation == "intersection" {
-		opt = shape.Intersection
+		opt = shape.Intersect
 	} else if operation == "difference" {
 		opt = shape.Difference
 	}

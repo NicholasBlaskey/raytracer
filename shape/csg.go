@@ -14,14 +14,14 @@ type Operation int
 
 const (
 	Union Operation = iota
-	Intersection
+	Intersect
 	Difference
 )
 
 func IntersectionAllowed(opt Operation, lHit, inL, inR bool) bool {
 	if opt == Union {
 		return (lHit && !inR) || (!lHit && !inL)
-	} else if opt == Intersection {
+	} else if opt == Intersect {
 		return (lHit && inR) || (!lHit && inL)
 	} else { // Difference
 		return (lHit && !inR) || (!lHit && inL)
@@ -77,7 +77,6 @@ func (s *CSG) FilterIntersections(xs []*intersection.Intersection) []*intersecti
 		if IntersectionAllowed(s.Operation, lHit, inL, inR) {
 			res = append(res, inter)
 		}
-
 		if lHit {
 			inL = !inL
 		} else {
@@ -92,6 +91,7 @@ func (s *CSG) localIntersections(r ray.Ray) []*intersection.Intersection {
 	xsL := s.Left.Intersections(r)
 	xsR := s.Right.Intersections(r)
 	xs := append(xsL, xsR...)
+	xs = s.FilterIntersections(xs)
 
 	sort.Slice(xs, func(i, j int) bool {
 		return xs[i].T < xs[i].T
